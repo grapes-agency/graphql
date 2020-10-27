@@ -1,0 +1,70 @@
+{
+  "name": "@grapes-agency/graphql",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "jest --verbose",
+    "release": "lerna version --conventional-commits -m \"chore(release): publish :tada:\"",
+    "lint": "eslint --max-warnings 0 --ext ts,tsx --cache packages",
+    "publish": "lerna run build && lerna publish from-package"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@grapes-agency/eslint-config": "^1.5.7",
+    "typescript": "^4.0.5"
+  },
+  "dependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "@babel/preset-typescript": "^7.12.1",
+    "@jagi/jest-transform-graphql": "^1.0.2",
+    "@types/jest": "^26.0.15",
+    "graphql": "^15.4.0",
+    "jest": "^26.6.1",
+    "lerna": "^3.22.1",
+    "rollup": "^2.32.1",
+    "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-copy-glob": "^0.3.1",
+    "rollup-plugin-graphql-tag": "^0.1.0",
+    "rollup-plugin-typescript2": "^0.28.0"
+  },
+  "prettier": "@grapes-agency/eslint-config/prettier",
+  "eslintConfig": {
+    "extends": [
+      "@grapes-agency/eslint-config/rules/base",
+      "@grapes-agency/eslint-config/rules/prettier"
+    ],
+    "rules": {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/consistent-type-assertions": "off",
+      "no-restricted-syntax": "off",
+      "no-param-reassign": "off",
+      "no-continue": "off",
+      "consistent-return": "off",
+      "complexity": "off",
+      "default-case": "off",
+      "class-methods-use-this": "off"
+    }
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.(j|t)sx?$": "babel-jest",
+      "^.+\\.(gql|graphql)$": "@jagi/jest-transform-graphql"
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "modulePathIgnorePatterns": [
+      "/dist/"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!@grapes-agency/)"
+    ],
+    "testMatch": [
+      "<rootDir>/packages/*/src/**/*.test.ts"
+    ]
+  }
+}

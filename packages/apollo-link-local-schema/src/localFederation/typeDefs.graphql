@@ -1,0 +1,4 @@
+extend type Query {
+  __resolveType(typename: String!, reference: __Reference!): __ResolvableTypes
+  __extendType(typename: String!, parent: __Parent!): __ResolvableTypes
+}

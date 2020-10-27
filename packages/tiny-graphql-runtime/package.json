@@ -1,0 +1,24 @@
+{
+  "name": "@grapes-agency/tiny-graphql-runtime",
+  "version": "1.0.0-alpha.7",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "../../tools/build.sh -c ../../rollup.config.js",
+    "watch": "npm run build -- -w"
+  },
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "graphql": "^15.4.0"
+  },
+  "devDependencies": {
+    "graphql": "^15.4.0",
+    "graphql-tag": "^2.11.0"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "access": "public"
+  },
+  "gitHead": "fb237deb0f8a48b3d9c3cf0a7cac3f9e978f742d"
+}
