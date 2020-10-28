@@ -1,4 +1,11 @@
-import type { ObjectTypeDefinitionNode, FieldDefinitionNode, GraphQLScalarType, FragmentDefinitionNode, FieldNode } from 'graphql'
+import type {
+  ObjectTypeDefinitionNode,
+  FieldDefinitionNode,
+  GraphQLScalarType,
+  FragmentDefinitionNode,
+  FieldNode,
+  ObjectTypeExtensionNode,
+} from 'graphql'
 
 export interface SubscriptionResolver<Context = any, T = any> {
   resolve?: (...args: Parameters<FieldResolver<Context>>) => T | Promise<T>
@@ -6,7 +13,7 @@ export interface SubscriptionResolver<Context = any, T = any> {
 }
 
 export interface ResolveInfo {
-  readonly parentType: ObjectTypeDefinitionNode
+  readonly parentType: ObjectTypeDefinitionNode | ObjectTypeExtensionNode
   readonly field: FieldDefinitionNode
   readonly fragments: { [key: string]: FragmentDefinitionNode }
   readonly selection: FieldNode

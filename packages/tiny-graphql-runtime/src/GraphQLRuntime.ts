@@ -11,6 +11,7 @@ import {
   DirectiveDefinitionNode,
   SelectionNode,
   EnumTypeDefinitionNode,
+  ObjectTypeExtensionNode,
 } from 'graphql'
 
 import { PromiseRegistry } from './PromiseRegistry'
@@ -28,6 +29,7 @@ import {
   isDeepListType,
   isNonNullType,
   unwrapType,
+  isObjectTypeExtension,
 } from './helpers'
 import type { Resolvers, Resolver, FieldResolver, SubscriptionResolver, ResolveInfo } from './interfaces'
 
@@ -60,6 +62,7 @@ interface GraphQLRuntimeOptions {
   typeDefs: DocumentNode
   resolvers?: Resolvers
   defaultResolver?: Resolver
+  allowObjectExtensionAsTypes?: boolean
 }
 
 interface ExecutionOptions {
@@ -73,7 +76,7 @@ interface ExecutionOptions {
 
 export class GraphQLRuntime {
   private resolvers: Resolvers
-  private objectMap: Map<string, ObjectTypeDefinitionNode>
+  private objectMap: Map<string, ObjectTypeDefinitionNode | ObjectTypeExtensionNode>
   private unionMap: Map<string, Set<string>>
   private interfaceMap: Map<string, Set<string>>
   private scalarMap: Map<string, GraphQLScalarType | null>
@@ -85,14 +88,23 @@ export class GraphQLRuntime {
   public mutationType: ObjectTypeDefinitionNode | null
   public subscriptionType: ObjectTypeDefinitionNode | null
 
-  constructor({ typeDefs, resolvers = {}, defaultResolver: dResolver = defaultResolver }: GraphQLRuntimeOptions) {
+  constructor({
+    typeDefs,
+    resolvers = {},
+    defaultResolver: dResolver = defaultResolver,
+    allowObjectExtensionAsTypes = false,
+  }: GraphQLRuntimeOptions) {
     this.defaultResolver = dResolver
     this.resolvers = resolvers
 
     const interfaceObjectMap = new Map<string, Set<string>>()
 
+    const objects = typeDefs.definitions.filter(
+      definition => isObjectTypeDefinition(definition) || (allowObjectExtensionAsTypes && isObjectTypeExtension(definition))
+    ) as Array<ObjectTypeDefinitionNode | ObjectTypeExtensionNode>
+
     this.objectMap = new Map(
-      typeDefs.definitions.filter(isObjectTypeDefinition).map(definition => {
+      objects.map(definition => {
         definition.interfaces?.forEach(iface => {
           const name = iface.name.value
           if (!interfaceObjectMap.has(name)) {
@@ -237,7 +249,11 @@ export class GraphQLRuntime {
     const promiseRegistry = new PromiseRegistry()
     let spreadIndex = 0
 
-    const processSelectionSet = (selectionSet: SelectionSetNode, type: ObjectTypeDefinitionNode, parentData: any) => {
+    const processSelectionSet = (
+      selectionSet: SelectionSetNode,
+      type: ObjectTypeDefinitionNode | ObjectTypeExtensionNode,
+      parentData: any
+    ) => {
       const data: Record<string, any> = {}
       for (const selection of selectionSet.selections) {
         const directives = this.processDirectives(selection, args)
@@ -308,6 +324,7 @@ export class GraphQLRuntime {
             promiseRegistry.add(
               resultPromise.then(result => {
                 result = result === undefined ? null : result
+
                 if (field.type.kind === 'NonNullType' && result === null) {
                   data[fieldName] = null
                   errors.push(
