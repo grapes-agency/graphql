@@ -1,5 +1,5 @@
-import { isObjectTypeDefinition } from '@grapes-agency/tiny-graphql-runtime/helpers'
-import { DocumentNode, GraphQLError } from 'graphql'
+import { isObjectTypeDefinition, isObjectTypeExtension } from '@grapes-agency/tiny-graphql-runtime/helpers'
+import { DocumentNode, GraphQLError, ObjectTypeDefinitionNode, ObjectTypeExtensionNode } from 'graphql'
 import merge from 'lodash/merge'
 
 import { Resolvers } from '../interfaces'
@@ -16,10 +16,12 @@ export class LocalFederationSupport {
   }
 
   public patch(typeDefs: DocumentNode, resolvers: Resolvers): [DocumentNode, Resolvers] {
-    fixTypeDefs(this.name, typeDefs)
-    this.typeDefs = typeDefs
+    const fixedTypeDefs = fixTypeDefs(this.name, typeDefs)
+    this.typeDefs = fixedTypeDefs
 
-    const types = typeDefs.definitions.filter(isObjectTypeDefinition)
+    const types = fixedTypeDefs.definitions.filter(
+      definition => isObjectTypeDefinition(definition) || isObjectTypeExtension(definition)
+    ) as Array<ObjectTypeDefinitionNode | ObjectTypeExtensionNode>
 
     const federationTypeDefs: DocumentNode = {
       kind: 'Document',
@@ -50,7 +52,7 @@ export class LocalFederationSupport {
         __resolveType: data => data?.__typename,
       },
     }
-    return [mergeDocuments([typeDefs, federationTypeDefs]), merge(resolvers, federationResolvers)]
+    return [mergeDocuments([fixedTypeDefs, federationTypeDefs]), merge(resolvers, federationResolvers)]
   }
 
   public getType(name: string) {

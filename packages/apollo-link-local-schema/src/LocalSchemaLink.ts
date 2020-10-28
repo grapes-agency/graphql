@@ -42,7 +42,9 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
     const resolversArray = Array.isArray(resolvers) ? resolvers : [resolvers]
 
     if (introspection) {
-      resolversArray.unshift(createIntrospectionResolvers(mergedTypeDefs))
+      resolversArray.unshift(
+        createIntrospectionResolvers(mergedTypeDefs, { includeObjectTypeExtensions: Boolean(this.federated) })
+      )
       mergedTypeDefs = mergeDocuments([introspectionTypeDefs, mergedTypeDefs])
     }
 
@@ -52,7 +54,11 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
       ;[mergedTypeDefs, mergedResolvers] = this.federated.patch(mergedTypeDefs, mergedResolvers)
     }
 
-    this.runtime = new GraphQLRuntime({ typeDefs: mergedTypeDefs, resolvers: mergedResolvers })
+    this.runtime = new GraphQLRuntime({
+      typeDefs: mergedTypeDefs,
+      resolvers: mergedResolvers,
+      allowObjectExtensionAsTypes: Boolean(this.federated),
+    })
     this.context = context
 
     this.initalized = true

@@ -1,6 +1,7 @@
-import { DocumentNode } from 'graphql'
+import { DocumentNode, DefinitionNode } from 'graphql'
 
-export const fixTypeDefs = (serviceName: string, typeDefs: DocumentNode) => {
+export const fixTypeDefs = (serviceName: string, typeDefs: DocumentNode): DocumentNode => {
+  const definitions: Array<DefinitionNode> = []
   for (const definition of typeDefs.definitions) {
     if (definition.kind === 'ObjectTypeDefinition') {
       switch (definition.name.value) {
@@ -21,11 +22,20 @@ export const fixTypeDefs = (serviceName: string, typeDefs: DocumentNode) => {
         case 'Query':
         case 'Mutation':
         case 'Subscription': {
-          Object.assign(definition, {
+          definitions.push({
+            ...definition,
             kind: 'ObjectTypeDefinition',
           })
+          continue
         }
       }
     }
+
+    definitions.push({ ...definition })
+  }
+
+  return {
+    ...typeDefs,
+    definitions,
   }
 }
