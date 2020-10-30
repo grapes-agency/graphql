@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.9](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.8...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.9) (2020-10-30)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** Ensure mutations run sequentially ([50fe7bb](https://github.com/grapes-agency/graphql/commit/50fe7bb780afdb92feac13c27e8644dc7890a72c))
+
+
+
+
+
 # 1.0.0-alpha.8 (2020-10-28)
 
 
