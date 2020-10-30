@@ -245,6 +245,8 @@ export class GraphQLRuntime {
     }
 
     let expectSubscription = mainOperation.operation === 'subscription'
+    let executeSequentially = mainOperation.operation === 'mutation'
+
     const errors: Array<GraphQLError> = []
     const promiseRegistry = new PromiseRegistry()
     let spreadIndex = 0
@@ -255,6 +257,7 @@ export class GraphQLRuntime {
       parentData: any
     ) => {
       const data: Record<string, any> = {}
+      let executionChain: Promise<any> = Promise.resolve()
       for (const selection of selectionSet.selections) {
         const directives = this.processDirectives(selection, args)
 
@@ -319,7 +322,15 @@ export class GraphQLRuntime {
               }
               break
             }
-            const resultPromise = Promise.resolve((resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
+            let resultPromise: Promise<any>
+            if (executeSequentially) {
+              executionChain = executionChain.then(() =>
+                Promise.resolve((resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
+              )
+              resultPromise = executionChain
+            } else {
+              resultPromise = Promise.resolve((resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
+            }
 
             promiseRegistry.add(
               resultPromise.then(result => {
@@ -444,6 +455,7 @@ export class GraphQLRuntime {
                 errors.push(new GraphQLError(`Unknown type ${fieldType}`))
               })
             )
+            executionChain = executeSequentially ? resultPromise : Promise.resolve()
             break
           }
           case 'FragmentSpread': {
@@ -467,6 +479,7 @@ export class GraphQLRuntime {
         }
       }
 
+      executeSequentially = false
       return data
     }
 
