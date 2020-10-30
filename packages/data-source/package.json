@@ -9,6 +9,7 @@
   },
   "author": "Torsten Blindert",
   "license": "MIT",
+  "sideEffects": false,
   "publishConfig": {
     "directory": "dist",
     "access": "public"

@@ -9,6 +9,7 @@
   },
   "author": "Torsten Blindert",
   "license": "MIT",
+  "sideEffects": false,
   "peerDependencies": {
     "@apollo/client": "^3.2.1",
     "graphql": "^15.3.0"

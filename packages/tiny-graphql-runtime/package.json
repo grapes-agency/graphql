@@ -9,6 +9,7 @@
   },
   "author": "",
   "license": "ISC",
+  "sideEffects": false,
   "peerDependencies": {
     "graphql": "^15.4.0"
   },
