@@ -16,7 +16,7 @@ export class LocalFederationSupport {
   }
 
   public patch(typeDefs: DocumentNode, resolvers: Resolvers): [DocumentNode, Resolvers] {
-    const fixedTypeDefs = fixTypeDefs(this.name, typeDefs)
+    const fixedTypeDefs = fixTypeDefs(typeDefs)
     this.typeDefs = fixedTypeDefs
 
     const types = fixedTypeDefs.definitions.filter(
