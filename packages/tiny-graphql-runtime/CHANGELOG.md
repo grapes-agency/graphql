@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.11](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.10...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.11) (2020-11-05)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** fixed scalar resolver type ([1896ac4](https://github.com/grapes-agency/graphql/commit/1896ac4011432aa269a07ed6988f9c5459dbabdd))
+
+
+
+
+
 # [1.0.0-alpha.10](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.9...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.10) (2020-11-05)
 
 
