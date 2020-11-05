@@ -1,6 +1,6 @@
 {
   "name": "@grapes-agency/data-source",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "Simple REST Data Store",
   "main": "index.js",
   "scripts": {
