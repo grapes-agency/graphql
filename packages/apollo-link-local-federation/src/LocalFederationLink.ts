@@ -5,14 +5,14 @@ import { DocumentNode } from 'graphql'
 import { IntrospectionService } from './introspection'
 import { LocalFederationService, ResolutionStrategy } from './utils'
 
-interface Service {
+export interface LocalFederationServiceDefinition {
   name: string
   link: LocalSchemaLink
 }
 
 interface LocalFederationLinkOptions {
   introspection?: boolean
-  services: Array<Service>
+  services: Array<LocalFederationServiceDefinition>
 }
 
 export class LocalFederationLink extends ApolloLink {
