@@ -12,6 +12,7 @@ import {
   SelectionNode,
   EnumTypeDefinitionNode,
   ObjectTypeExtensionNode,
+  isScalarType,
 } from 'graphql'
 
 import { PromiseRegistry } from './PromiseRegistry'
@@ -49,6 +50,16 @@ const SPREAD = '__spread'
 
 const isSubscriptionResolver = (resolver: Resolver): resolver is SubscriptionResolver =>
   typeof resolver === 'object' && resolver !== null && 'resolve' in resolver
+
+type WithoutScalar<T = Resolvers[string]> = T extends GraphQLScalarType ? never : T
+
+const asResolvers = (possibleResolvers?: Resolvers[string]): WithoutScalar => {
+  if (!possibleResolvers || isScalarType(possibleResolvers)) {
+    return {}
+  }
+
+  return possibleResolvers
+}
 
 const defaultResolver: Resolver = (root, _args, _context, { field }) => {
   if (!root || typeof root !== 'object') {
@@ -292,7 +303,7 @@ export class GraphQLRuntime {
 
             const resolver = (field === typenameFieldDefinition
               ? () => type.name.value
-              : this.resolvers[type.name.value]?.[field.name.value] || this.defaultResolver) as Resolver
+              : asResolvers(this.resolvers[type.name.value])[field.name.value] || this.defaultResolver) as Resolver
 
             let generatedArgs = {}
             try {
@@ -376,7 +387,7 @@ export class GraphQLRuntime {
                   const possibleTypes = this.unionMap.has(fieldType)
                     ? this.unionMap.get(fieldType)!
                     : this.interfaceMap.get(fieldType)!
-                  const typeResolver = this.resolvers[fieldType]?.__resolveType
+                  const typeResolver = asResolvers(this.resolvers[fieldType]).__resolveType
                   if (!typeResolver) {
                     data[fieldName] = null
                     errors.push(new GraphQLError(`${fieldType}.__resolveType method is missing`))

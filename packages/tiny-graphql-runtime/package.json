@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "graphql": "^15.4.0",
+    "graphql-scalars": "^1.4.1",
     "graphql-tag": "^2.11.0"
   },
   "publishConfig": {

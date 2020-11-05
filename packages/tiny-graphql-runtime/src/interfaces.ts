@@ -37,5 +37,5 @@ export type TypeResolver<Context = any> = (
 
 export type Resolvers<Context = any> = Record<
   string,
-  { __resolveType?: TypeResolver } & Record<string, Resolver<Context> | GraphQLScalarType>
+  GraphQLScalarType | ({ __resolveType?: TypeResolver } & Record<string, Resolver<Context>>)
 >
