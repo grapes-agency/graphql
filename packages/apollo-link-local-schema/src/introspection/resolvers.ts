@@ -23,6 +23,7 @@ import {
   InputValueDefinitionNode,
   GraphQLError,
   EnumValueDefinitionNode,
+  ObjectTypeDefinitionNode,
 } from 'graphql'
 
 import { isDeprecated, getDeprecationReason } from './deprecation'
@@ -54,21 +55,18 @@ const specifiedScalarTypeDefinitions: Array<ScalarTypeDefinitionNode> = specifie
 }))
 
 interface Options {
-  includeObjectTypeExtensions?: boolean
+  federated?: boolean
 }
 
-export const createIntrospectionResolvers = (
-  typeDefs: DocumentNode,
-  { includeObjectTypeExtensions = false }: Options = {}
-): Resolvers => {
+export const createIntrospectionResolvers = (typeDefs: DocumentNode, { federated = false }: Options = {}): Resolvers => {
   const schemaDefinition = typeDefs.definitions.find(isSchemaDefinition)
 
   const typesMap = new Map(
     [
       ...specifiedScalarTypeDefinitions,
-      ...(typeDefs.definitions.filter(
-        type => isTypeDefinition(type) || (includeObjectTypeExtensions && isObjectTypeExtension(type))
-      ) as Array<TypeDefinitionNode | ObjectTypeExtensionNode>),
+      ...(typeDefs.definitions.filter(type => isTypeDefinition(type) || (federated && isObjectTypeExtension(type))) as Array<
+        TypeDefinitionNode | ObjectTypeExtensionNode
+      >),
     ].map(definition => [definition.name.value, definition])
   )
 
@@ -82,7 +80,21 @@ export const createIntrospectionResolvers = (
       queryType: () => {
         const queryTypeName =
           schemaDefinition?.operationTypes.find(operationType => operationType.operation === 'query')?.type.name.value || 'Query'
-        return typesMap.get(queryTypeName)
+
+        if (typesMap.has(queryTypeName)) {
+          return typesMap.get(queryTypeName)
+        }
+
+        if (!federated) {
+          return null
+        }
+
+        const fakeQueryType: ObjectTypeDefinitionNode = {
+          kind: 'ObjectTypeDefinition',
+          name: { kind: 'Name', value: 'Query' },
+        }
+
+        return fakeQueryType
       },
       mutationType: () => {
         const mutationTypeName =

@@ -42,9 +42,7 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
     const resolversArray = Array.isArray(resolvers) ? resolvers : [resolvers]
 
     if (introspection) {
-      resolversArray.unshift(
-        createIntrospectionResolvers(mergedTypeDefs, { includeObjectTypeExtensions: Boolean(this.federated) })
-      )
+      resolversArray.unshift(createIntrospectionResolvers(mergedTypeDefs, { federated: Boolean(this.federated) }))
       mergedTypeDefs = mergeDocuments([introspectionTypeDefs, mergedTypeDefs])
     }
 
