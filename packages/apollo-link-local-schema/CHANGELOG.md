@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.25](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.0.0-alpha.24...@grapes-agency/apollo-link-local-schema@1.0.0-alpha.25) (2020-11-06)
+
+
+### Features
+
+* **apollo-link-local-schema:** Support introspection for federated link without query type ([07ec58c](https://github.com/grapes-agency/graphql/commit/07ec58c15647a9c1bdf201790aec8f8bd50374b3))
+
+
+
+
+
 # [1.0.0-alpha.24](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.0.0-alpha.23...@grapes-agency/apollo-link-local-schema@1.0.0-alpha.24) (2020-11-05)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-schema
