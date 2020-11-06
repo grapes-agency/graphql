@@ -3,7 +3,7 @@ import { createLocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
 import type { Resolvers } from '@grapes-agency/tiny-graphql-runtime'
 
 import { createLocalFederationLink } from '../LocalFederationLink'
-import { observablePromise } from '../utils/observablePromise'
+import { observablePromise } from '../utils'
 
 import { createOperation } from './createOperation'
 
