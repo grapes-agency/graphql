@@ -113,9 +113,12 @@ describe('query', () => {
 
   it('resolves nested fields', async () => {
     const typeDefs = gql`
+      type SubTest {
+        subProp: String!
+      }
       type Test {
         propA: String!
-        propB: String!
+        propB: SubTest!
       }
       type Query {
         test: Test!
@@ -130,13 +133,18 @@ describe('query', () => {
         propA: root => `${root}.A`,
         propB: root => `${root}.B`,
       },
+      SubTest: {
+        subProp: root => `${root}.Sub`,
+      },
     }
 
     const query = gql`
       query Test {
         test {
           propA
-          propB
+          propB {
+            subProp
+          }
         }
       }
     `
@@ -148,7 +156,9 @@ describe('query', () => {
     expect(result.data).toEqual({
       test: {
         propA: 'abc.A',
-        propB: 'abc.B',
+        propB: {
+          subProp: 'abc.B.Sub',
+        },
       },
     })
   })
@@ -287,7 +297,7 @@ describe('query', () => {
       test: null,
     })
   })
-  it('want resolve null', async () => {
+  it("won't resolve null", async () => {
     const typeDefs = gql`
       type Test {
         propA: String

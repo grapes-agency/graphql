@@ -164,28 +164,9 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
             return
           }
 
-          const observables: Array<Observable<any>> = []
-          Object.values(data as { [key: string]: Observable<any> }).forEach(observable => {
-            observables.push(
-              observable.flatMap(
-                result =>
-                  new Observable(o => {
-                    this.runtime
-                      .execute({
-                        query: internalQuery!,
-                        rootData: result,
-                        context: {
-                          ...this.getContext(),
-                          __subscription: true,
-                        },
-                        args: variables,
-                      })
-                      .then(enrichtedResult => o.next(enrichtedResult))
-                  })
-              )
-            )
-          })
-
+          const observables = Array.from(Object.values(data as { [key: string]: Observable<any> }), observable =>
+            observable.map(result => ({ data: result }))
+          )
           if (observables.length === 0) {
             observer.complete()
             return

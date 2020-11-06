@@ -105,7 +105,7 @@ export const createIntrospectionResolvers = (typeDefs: DocumentNode, { federated
       subscriptionType: () => {
         const subscriptionTypeName =
           schemaDefinition?.operationTypes.find(operationType => operationType.operation === 'subscription')?.type.name.value ||
-          'Subscripion'
+          'Subscription'
         return typesMap.get(subscriptionTypeName)
       },
       directives: () => typeDefs.definitions.filter(isDirectiveDefinition),
@@ -174,7 +174,7 @@ export const createIntrospectionResolvers = (typeDefs: DocumentNode, { federated
           return null
         }
 
-        return node.values?.find(value => includeDeprecated || !isDeprecated(value))
+        return node.values?.filter(value => includeDeprecated || !isDeprecated(value))
       },
       inputFields: (node: ASTNode) => {
         if (!isInputObjectTypeDefinition(node)) {

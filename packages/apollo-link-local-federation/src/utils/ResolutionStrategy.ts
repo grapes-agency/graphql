@@ -95,7 +95,7 @@ export class ResolutionStrategy {
   }
 
   protected executeInitial(operation: Operation, isSubscription: boolean): Observable<FetchResult> | null {
-    if (isSubscription && this.initialDocuments.size > 0) {
+    if (isSubscription && this.initialDocuments.size > 1) {
       throw new GraphQLError('Subscription cannot be merged between services')
     }
 

@@ -9,5 +9,7 @@ export class PromiseRegistry extends Set<Promise<any>> {
       currentPromiseCount = nextPromiseCount
       nextPromiseCount = this.size
     }
+
+    this.clear()
   }
 }

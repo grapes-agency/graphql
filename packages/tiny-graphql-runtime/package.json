@@ -14,6 +14,7 @@
     "graphql": "^15.4.0"
   },
   "devDependencies": {
+    "@types/zen-observable": "^0.8.1",
     "graphql": "^15.4.0",
     "graphql-scalars": "^1.4.1",
     "graphql-tag": "^2.11.0"
@@ -22,5 +23,8 @@
     "directory": "dist",
     "access": "public"
   },
-  "gitHead": "fb237deb0f8a48b3d9c3cf0a7cac3f9e978f742d"
+  "gitHead": "fb237deb0f8a48b3d9c3cf0a7cac3f9e978f742d",
+  "dependencies": {
+    "zen-observable": "^0.8.15"
+  }
 }

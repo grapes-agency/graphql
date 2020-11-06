@@ -14,6 +14,7 @@ import {
   ObjectTypeExtensionNode,
   isScalarType,
 } from 'graphql'
+import Observable from 'zen-observable'
 
 import { PromiseRegistry } from './PromiseRegistry'
 import { generateArgs } from './generateArgs'
@@ -49,7 +50,7 @@ const typenameFieldDefinition: FieldDefinitionNode = {
 const SPREAD = '__spread'
 
 const isSubscriptionResolver = (resolver: Resolver): resolver is SubscriptionResolver =>
-  typeof resolver === 'object' && resolver !== null && 'resolve' in resolver
+  typeof resolver === 'object' && resolver !== null && 'subscribe' in resolver
 
 type WithoutScalar<T = Resolvers[string]> = T extends GraphQLScalarType ? never : T
 
@@ -60,6 +61,54 @@ const asResolvers = (possibleResolvers?: Resolvers[string]): WithoutScalar => {
 
   return possibleResolvers
 }
+
+const asyncIteratorToObservable = (
+  resolver: SubscriptionResolver<any>,
+  rootValue: any,
+  args: any,
+  context: any,
+  info: ResolveInfo
+) =>
+  new Observable(observer => {
+    let stopped = false
+    let asyncIterator: AsyncIterator<any>
+    Promise.resolve(resolver.subscribe(rootValue, args, context, info)).then(ai => {
+      asyncIterator = ai
+      if (stopped) {
+        return
+      }
+
+      const pullValue = () => {
+        asyncIterator
+          .next()
+          .then(nextValue => {
+            if (resolver.resolve) {
+              nextValue = resolver.resolve(nextValue, args, context, info)
+            }
+
+            Promise.resolve(nextValue).then(data => {
+              if (stopped) {
+                return
+              }
+
+              observer.next(data.value)
+            })
+
+            pullValue()
+          })
+          .catch(error => {
+            observer.error(error)
+          })
+      }
+
+      pullValue()
+    })
+
+    return () => {
+      asyncIterator?.return?.()
+      stopped = true
+    }
+  })
 
 const defaultResolver: Resolver = (root, _args, _context, { field }) => {
   if (!root || typeof root !== 'object') {
@@ -294,6 +343,8 @@ export class GraphQLRuntime {
               break
             }
 
+            const fieldType = unwrapType(field.type).name.value
+
             const resolveInfo: ResolveInfo = {
               field,
               parentType: type,
@@ -316,8 +367,24 @@ export class GraphQLRuntime {
 
             if (expectSubscription) {
               expectSubscription = false
+
+              const mapSubscriptionResult = (result: any) =>
+                new Observable(observer => {
+                  const processsedData = processSelectionSet(
+                    selectionSet,
+                    { ...type, name: { kind: 'Name', value: '__' } },
+                    result
+                  )
+
+                  promiseRegistry.all().then(() => {
+                    observer.next(this.compose(processsedData))
+                  })
+                })
+
               if (isSubscriptionResolver(resolver)) {
-                data[fieldName] = resolver
+                data[fieldName] = asyncIteratorToObservable(resolver, parentData, args, context, resolveInfo).flatMap(
+                  mapSubscriptionResult
+                )
               } else {
                 promiseRegistry.add(
                   Promise.resolve(resolver(parentData, generatedArgs, context, resolveInfo)).then(result => {
@@ -326,8 +393,11 @@ export class GraphQLRuntime {
                       errors.push(
                         new GraphQLError(`Subscription field ${field.name.value} has to return an object with subscribe function`)
                       )
+                      return
                     }
-                    data[fieldName] = result
+                    data[fieldName] = asyncIteratorToObservable(result, parentData, args, context, resolveInfo).flatMap(
+                      mapSubscriptionResult
+                    )
                   })
                 )
               }
@@ -363,8 +433,6 @@ export class GraphQLRuntime {
                   }
                   return
                 }
-
-                const fieldType = unwrapType(field.type).name.value
 
                 if (this.scalarMap.has(fieldType)) {
                   const scalarType = this.scalarMap.get(fieldType)
