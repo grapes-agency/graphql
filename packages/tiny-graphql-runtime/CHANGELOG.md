@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.13](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.12...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.13) (2020-11-06)
+
+
+### Features
+
+* ensure [@skip](https://github.com/skip) and [@include](https://github.com/include) always works ([a4d13da](https://github.com/grapes-agency/graphql/commit/a4d13da3d80995acb610e06f0b9552f8fe863581))
+
+
+
+
+
 # [1.0.0-alpha.12](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.11...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.12) (2020-11-06)
 
 

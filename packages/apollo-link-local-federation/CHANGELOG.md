@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.7](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.6...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.7) (2020-11-06)
+
+
+### Features
+
+* ensure [@skip](https://github.com/skip) and [@include](https://github.com/include) always works ([a4d13da](https://github.com/grapes-agency/graphql/commit/a4d13da3d80995acb610e06f0b9552f8fe863581))
+
+
+
+
+
 # [1.0.0-alpha.6](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.5...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.6) (2020-11-06)
 
 
