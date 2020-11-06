@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.26](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.0.0-alpha.25...@grapes-agency/apollo-link-local-schema@1.0.0-alpha.26) (2020-11-06)
+
+
+### Bug Fixes
+
+* supscriptions ([cd51934](https://github.com/grapes-agency/graphql/commit/cd51934393e7ee44699652cc8b5e694c86536083))
+
+
+
+
+
 # [1.0.0-alpha.25](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.0.0-alpha.24...@grapes-agency/apollo-link-local-schema@1.0.0-alpha.25) (2020-11-06)
 
 
