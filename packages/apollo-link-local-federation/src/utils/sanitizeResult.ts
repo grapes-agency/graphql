@@ -30,7 +30,10 @@ export const sanitizeResults = (data: any, document: DocumentNode) => {
         }
         case 'Field': {
           const selectionName = selection.alias?.value || selection.name.value
-          const selectionData = currentData[selectionName] ?? null
+          if (!(selectionName in currentData)) {
+            break
+          }
+          const selectionData = currentData[selectionName]
 
           if (selection.selectionSet) {
             if (Array.isArray(selectionData)) {

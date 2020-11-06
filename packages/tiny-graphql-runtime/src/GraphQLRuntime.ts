@@ -17,6 +17,8 @@ import {
 import Observable from 'zen-observable'
 
 import { PromiseRegistry } from './PromiseRegistry'
+import { asyncIteratorToObservable } from './asyncIteratorToObservable'
+import { defaultDirectives } from './defaultDirectives'
 import { generateArgs } from './generateArgs'
 import {
   isObjectTypeDefinition,
@@ -61,54 +63,6 @@ const asResolvers = (possibleResolvers?: Resolvers[string]): WithoutScalar => {
 
   return possibleResolvers
 }
-
-const asyncIteratorToObservable = (
-  resolver: SubscriptionResolver<any>,
-  rootValue: any,
-  args: any,
-  context: any,
-  info: ResolveInfo
-) =>
-  new Observable(observer => {
-    let stopped = false
-    let asyncIterator: AsyncIterator<any>
-    Promise.resolve(resolver.subscribe(rootValue, args, context, info)).then(ai => {
-      asyncIterator = ai
-      if (stopped) {
-        return
-      }
-
-      const pullValue = () => {
-        asyncIterator
-          .next()
-          .then(nextValue => {
-            if (resolver.resolve) {
-              nextValue = resolver.resolve(nextValue, args, context, info)
-            }
-
-            Promise.resolve(nextValue).then(data => {
-              if (stopped) {
-                return
-              }
-
-              observer.next(data.value)
-            })
-
-            pullValue()
-          })
-          .catch(error => {
-            observer.error(error)
-          })
-      }
-
-      pullValue()
-    })
-
-    return () => {
-      asyncIterator?.return?.()
-      stopped = true
-    }
-  })
 
 const defaultResolver: Resolver = (root, _args, _context, { field }) => {
   if (!root || typeof root !== 'object') {
@@ -194,7 +148,10 @@ export class GraphQLRuntime {
     )
 
     this.directiveMap = new Map(
-      typeDefs.definitions.filter(isDirectiveDefinition).map(definition => [definition.name.value, definition])
+      [
+        ...(typeDefs.definitions.filter(isDirectiveDefinition) as Array<DirectiveDefinitionNode>),
+        ...defaultDirectives,
+      ].map(definition => [definition.name.value, definition])
     )
 
     this.scalarMap = new Map([
