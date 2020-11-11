@@ -62,7 +62,11 @@ export abstract class RESTDataSource {
 
   protected willSendRequest?(request: RequestOptions): void
 
-  protected onResponse<TResult = any>(response: Response): Promise<TResult> {
+  protected onResponse<TResult = any>(response: Response, request: Request): Response | Promise<TResult> {
+    if (request.method === 'HEAD') {
+      return response
+    }
+
     if (response.ok) {
       return this.parseBody(response)
     } else {
@@ -116,13 +120,13 @@ export abstract class RESTDataSource {
     const executeRequest = async () => {
       try {
         const response = await fetch(request)
-        return this.onResponse(response)
+        return this.onResponse(response, request)
       } catch (error) {
         this.onError(error, request)
       }
     }
 
-    if (request.method === 'GET') {
+    if (request.method === 'GET' || request.method === 'HEAD') {
       let promise = this.memoizedResults.get(cacheKey)
       if (promise) {
         return promise
@@ -139,6 +143,10 @@ export abstract class RESTDataSource {
 
   protected get<TResult = any>(path: string, params?: URLSearchParamsInit, init?: RawRequestOptions) {
     return this.fetch<TResult>({ method: 'GET', path, params, ...init })
+  }
+
+  protected head(path: string, params?: URLSearchParamsInit, init?: RawRequestOptions) {
+    return this.fetch<Response>({ method: 'HEAD', path, params, ...init })
   }
 
   protected post<TResult = any>(path: string, body?: Body, init?: RawRequestOptions) {
