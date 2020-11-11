@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.7](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.6...@grapes-agency/data-source@1.0.0-alpha.7) (2020-11-11)
+
+
+### Features
+
+* **data-source:** Allow HEAD request ([ebe4578](https://github.com/grapes-agency/graphql/commit/ebe45787601635ed16dfa06d335fd82bda774873))
+
+
+
+
+
 # [1.0.0-alpha.6](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.5...@grapes-agency/data-source@1.0.0-alpha.6) (2020-11-05)
 
 
