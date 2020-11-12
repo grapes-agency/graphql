@@ -3,7 +3,7 @@ import { FetchResult, Operation } from '@apollo/client/core'
 import { getMainDefinition, Observable } from '@apollo/client/utilities'
 import { DocumentNode, FieldNode, SelectionNode, visit, GraphQLError } from 'graphql'
 import getByPath from 'lodash/get'
-import merge from 'lodash/merge'
+import mergeWith from 'lodash/mergeWith'
 import setByPath from 'lodash/set'
 
 import type { LocalFederationService } from './LocalFederationService'
@@ -12,6 +12,12 @@ import { observablePromise } from './observablePromise'
 import { sanitizeResults } from './sanitizeResult'
 
 const isFieldNode = (node: SelectionNode): node is FieldNode => node.kind === 'Field'
+
+const mergeCustomizer = (_prevValue: any, nextValue: any) => {
+  if (Array.isArray(nextValue)) {
+    return nextValue
+  }
+}
 
 export class ResolutionStrategy {
   protected initialDocuments = new Set<DocumentInfo>()
@@ -115,7 +121,7 @@ export class ResolutionStrategy {
         Array.from(this.initialDocuments).map(({ document, service }) => {
           operation.query = document
           return service.execute(operation)?.forEach(r => {
-            result = merge(result, { data: r.data || {}, errors: r.errors || {} })
+            result = mergeWith(result, { data: r.data || {}, errors: r.errors || {} }, mergeCustomizer)
           })
         })
       ).then(() => {
