@@ -156,6 +156,10 @@ export const distributeQuery = (
           return field
         }
 
+        if ((fieldName === '__schema' || fieldName === '__type') && service.name !== 'IntrospectionService') {
+          return null
+        }
+
         const parent = fieldPath[fieldPath.length - 1]
 
         if (typeof parent.type === 'string' || (!isObjectTypeDefinition(parent.type) && !isObjectTypeExtension(parent.type))) {
