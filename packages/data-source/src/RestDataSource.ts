@@ -84,7 +84,17 @@ export abstract class RESTDataSource {
 
   protected fetch<TResult>(options: BaseRequestOptions): Promise<TResult> {
     if (!(options.params instanceof URLSearchParams)) {
-      options.params = new URLSearchParams(options.params)
+      const searchParams = new URLSearchParams()
+      if (options.params) {
+        for (const [name, value] of Object.entries(options.params)) {
+          if (Array.isArray(value)) {
+            value.map(v => searchParams.append(name, v))
+          } else {
+            searchParams.append(name, value)
+          }
+        }
+      }
+      options.params = searchParams
     }
 
     if (!(options.headers instanceof Headers)) {
@@ -149,15 +159,15 @@ export abstract class RESTDataSource {
     return this.fetch<Response>({ method: 'HEAD', path, params, ...init })
   }
 
-  protected post<TResult = any>(path: string, body?: Body, init?: RawRequestOptions) {
+  protected post<TResult = any>(path: string, body?: Body, init?: RawRequestOptions & { params: URLSearchParamsInit }) {
     return this.fetch<TResult>({ method: 'POST', path, body, ...init })
   }
 
-  protected patch<TResult = any>(path: string, body?: Body, init?: RawRequestOptions) {
+  protected patch<TResult = any>(path: string, body?: Body, init?: RawRequestOptions & { params: URLSearchParamsInit }) {
     return this.fetch<TResult>({ method: 'PATH', path, body, ...init })
   }
 
-  protected put<TResult = any>(path: string, body?: Body, init?: RawRequestOptions) {
+  protected put<TResult = any>(path: string, body?: Body, init?: RawRequestOptions & { params: URLSearchParamsInit }) {
     return this.fetch<TResult>({ method: 'PUT', path, body, ...init })
   }
 
