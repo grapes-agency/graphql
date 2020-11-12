@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.8](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.7...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.8) (2020-11-12)
+
+
+### Bug Fixes
+
+* **apollo-link-local-federation:** Don't merge arrays ([dd0ab5b](https://github.com/grapes-agency/graphql/commit/dd0ab5b6be77a05e40d996c57249f76288d1dfb5))
+* **apollo-link-local-federation:** Only introspect with introspection service ([d54ea05](https://github.com/grapes-agency/graphql/commit/d54ea05151f72344a84581512cc4d531ca5b473d))
+
+
+
+
+
 # [1.0.0-alpha.7](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.6...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.7) (2020-11-06)
 
 
