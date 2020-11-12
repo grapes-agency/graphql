@@ -22,12 +22,13 @@ const mergeCustomizer = (_prevValue: any, nextValue: any) => {
 export class ResolutionStrategy {
   protected initialDocuments = new Set<DocumentInfo>()
   protected extensionDocuments = new Map<string, DocumentInfo>()
-
+  protected distributionErrors: Array<GraphQLError> = []
   public deltaQuery!: DocumentNode | null
 
   constructor(private query: DocumentNode, services: Array<LocalFederationService>) {
     for (const service of services) {
-      const documents = distributeQuery(query, service, services)
+      const [documents, errors] = distributeQuery(query, service, services)
+      this.distributionErrors.push(...errors)
       if (!documents) {
         continue
       }
@@ -116,18 +117,25 @@ export class ResolutionStrategy {
     }
 
     return new Observable(observer => {
-      let result: FetchResult = { data: {}, errors: [] }
+      let resultData: Record<string, any> = {}
+      const resultErrors: Array<GraphQLError> = []
+
       Promise.all(
         Array.from(this.initialDocuments).map(({ document, service }) => {
           operation.query = document
           return service.execute(operation)?.forEach(r => {
-            result = mergeWith(result, { data: r.data || {}, errors: r.errors || {} }, mergeCustomizer)
+            if (r.data) {
+              resultData = mergeWith(resultData, r.data, mergeCustomizer)
+            }
+            if (r.errors) {
+              resultErrors.push(...r.errors)
+            }
           })
         })
       ).then(() => {
         observer.next({
-          data: Object.keys(result.data!).length > 0 ? result.data : null,
-          errors: result.errors!.length > 0 ? result.errors : undefined,
+          data: Object.keys(resultData).length > 0 ? resultData : null,
+          errors: resultErrors.length > 0 ? resultErrors : undefined,
         })
         observer.complete()
       })
@@ -183,16 +191,17 @@ export class ResolutionStrategy {
           return
         }
       } catch (error) {
-        observer.next({ data: null, errors: [error] })
+        observer.next({ data: null, errors: [error, ...this.distributionErrors] })
         observer.complete()
         return
       }
 
       const subscription = observable.subscribe({
         ...observer,
-        next: async data => {
-          const fullData = await this.executeRest(data, operation)
-          observer.next(fullData)
+        next: async result => {
+          const { data, errors } = await this.executeRest(result, operation)
+          const allErrors = [...(errors || []), ...this.distributionErrors]
+          observer.next({ data, errors: allErrors.length > 0 ? allErrors : undefined })
           if (!isSubscription) {
             observer.complete()
           }

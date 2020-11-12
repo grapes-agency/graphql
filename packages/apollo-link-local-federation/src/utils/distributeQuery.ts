@@ -11,6 +11,7 @@ import {
   FieldNode,
   StringValueNode,
   specifiedScalarTypes,
+  GraphQLError,
 } from 'graphql'
 
 import { ExternalQuery } from './ExternalQuery'
@@ -88,12 +89,12 @@ export const distributeQuery = (
   query: DocumentNode,
   service: LocalFederationService,
   services: Array<LocalFederationService>
-) => {
+): [null | Map<string, DocumentInfo>, Array<GraphQLError>] => {
   const fieldPath: Array<{ type: DefinitionNode | string; name: string; service: LocalFederationService }> = []
   const injectFields: Array<Set<string>> = []
   const fragmentHints = new Map<string, typeof fieldPath>()
   const fragments = new Map<string, FragmentDefinitionNode>()
-
+  const errors: Array<GraphQLError> = []
   const firstPass: DocumentNode = visit(query, {
     OperationDefinition: {
       enter: operationDefinition => {
@@ -106,7 +107,7 @@ export const distributeQuery = (
       },
       leave: operationDefinition => {
         fieldPath.pop()
-        if (operationDefinition.selectionSet.selections.length === 0) {
+        if (!operationDefinition.selectionSet || operationDefinition.selectionSet.selections.length === 0) {
           return null
         }
       },
@@ -120,6 +121,10 @@ export const distributeQuery = (
         const inject = Array.from(fields)
 
         if (inject.length === 0) {
+          if (baseSelectionSet.selections.length === 0) {
+            return null
+          }
+
           return
         }
 
@@ -163,7 +168,8 @@ export const distributeQuery = (
         const parent = fieldPath[fieldPath.length - 1]
 
         if (typeof parent.type === 'string' || (!isObjectTypeDefinition(parent.type) && !isObjectTypeExtension(parent.type))) {
-          throw new Error('Subselection on non object type field is impossible')
+          errors.push(new GraphQLError('Subselection on non object type field is impossible'))
+          return null
         }
 
         const parentField = parent.type.fields?.find(f => f.name.value === fieldName)
@@ -173,12 +179,15 @@ export const distributeQuery = (
           const entityKeys = getEntityKeys(parent.type)
 
           if (entityKeys.length === 0) {
+            if (fieldPath.length > 1) {
+              errors.push(new GraphQLError(`Cannot query field ${fieldName} on type ${typeName}`))
+            }
             return null
           }
 
           const external = findService(typeName, fieldName, services)
           if (!external) {
-            console.warn(`unable to resolve field "${fieldName}" of type "${typeName}"`)
+            errors.push(new GraphQLError(`unable to resolve field "${fieldName}" of type "${typeName}"`))
             return null
           }
 
@@ -212,7 +221,8 @@ export const distributeQuery = (
           return field
         }
 
-        throw new Error(`Could not determine type for field ${field.name.value}`)
+        errors.push(new GraphQLError(`Could not determine type for field ${field.name.value}`))
+        return null
       },
       leave: field => {
         if (field.name.value !== '__typename') {
@@ -223,7 +233,7 @@ export const distributeQuery = (
   })
 
   if (firstPass.definitions.length === 0) {
-    return null
+    return [null, errors]
   }
 
   const documents = new Map<string, DocumentInfo>()
@@ -305,5 +315,5 @@ export const distributeQuery = (
   }
 
   processDocument('', service, firstPass)
-  return documents
+  return [documents, errors]
 }
