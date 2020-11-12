@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.8](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.7...@grapes-agency/data-source@1.0.0-alpha.8) (2020-11-12)
+
+
+### Bug Fixes
+
+* **data-source:** Correctly handle array params ([82d211b](https://github.com/grapes-agency/graphql/commit/82d211be9e7314dea9bda13f56caf06a40d2b0ff))
+
+
+
+
+
 # [1.0.0-alpha.7](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.6...@grapes-agency/data-source@1.0.0-alpha.7) (2020-11-11)
 
 
