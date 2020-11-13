@@ -1,8 +1,9 @@
+import type { Resolver } from '@grapes-agency/tiny-graphql-runtime'
 import { isObjectTypeDefinition, isObjectTypeExtension } from '@grapes-agency/tiny-graphql-runtime/helpers'
 import { DocumentNode, GraphQLError, ObjectTypeDefinitionNode, ObjectTypeExtensionNode } from 'graphql'
 import merge from 'lodash/merge'
 
-import { Resolvers } from '../interfaces'
+import type { Resolvers } from '../interfaces'
 import { mergeDocuments } from '../utils'
 
 import { fixTypeDefs } from './fixTypeDefs'
@@ -35,16 +36,20 @@ export class LocalFederationSupport {
       ],
     }
 
-    const federationResolvers: Resolvers = {
+    const federationResolvers: Record<string, Record<string, Resolver>> = {
       Query: {
-        __resolveType: (_root, { typename, reference }) => {
+        __resolveType: async (_root, { typename, reference }, context, info) => {
           const referenceResolver = resolvers[typename]?.__resolveReference
 
           if (!referenceResolver) {
-            throw new GraphQLError(`Missing ${typename}.__resolveRefernece`)
+            throw new GraphQLError(`Missing ${typename}.__resolveReference`)
           }
 
-          return { __typename: typename, ...referenceResolver(reference) }
+          const resolvedReference = await referenceResolver(reference, context, info)
+          if (resolvedReference) {
+            return { __typename: typename, ...resolvedReference }
+          }
+          return null
         },
         __extendType: (_root, { typename, parent }) => ({ ...parent, __typename: typename }),
       },
