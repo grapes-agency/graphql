@@ -8,6 +8,7 @@ import setByPath from 'lodash/set'
 
 import type { LocalFederationService } from './LocalFederationService'
 import { distributeQuery, DocumentInfo } from './distributeQuery'
+import { getWithPath } from './getWithPath'
 import { observablePromise } from './observablePromise'
 import { sanitizeResults } from './sanitizeResult'
 
@@ -143,34 +144,56 @@ export class ResolutionStrategy {
   }
 
   protected async executeRest(rootData: FetchResult, operation: Operation): Promise<FetchResult> {
-    const data = { ...rootData.data }
     const errors = [...(rootData.errors || [])]
-    for (const [path, { typename, document, keyDocument, service }] of this.extensionDocuments) {
-      const operationData = sanitizeResults(getByPath(data, path), keyDocument!)
 
-      if (operationData === null || Object.keys(operationData).length === 0) {
-        console.warn('No data for resolving')
-        return data
+    const extendData = async (
+      baseData: Record<string, any>,
+      operationData: Record<string, any> | null,
+      path: string,
+      info: DocumentInfo
+    ) => {
+      if (!operationData) {
+        return
+      }
+      const sanitizedOperationData = sanitizeResults(operationData, info.keyDocument!)
+
+      if (sanitizedOperationData === null || Object.keys(sanitizedOperationData).length === 0) {
+        errors.push(new GraphQLError(`Cannot extend type ${info.typename}. No data available`))
+        return
       }
 
-      operation.query = document
+      operation.query = info.document
       operation.variables = {
-        typename: typename!,
-        operationData,
+        typename: info.typename!,
+        operationData: sanitizedOperationData,
       }
 
-      const observable = service.execute(operation)
+      const observable = info.service.execute(operation)
       const extension = await observablePromise(observable)
 
-      if (extension?.data) {
-        setByPath(
-          data,
-          path,
-          Object.assign(getByPath(data, path, {}), extension.data.__resolveType || extension.data.__extendType)
-        )
+      const result = extension?.data?.__resolveType || extension?.data?.__extendType || null
+
+      if (result === null && !info.extension) {
+        setByPath(baseData, path, null)
+      } else {
+        setByPath(baseData, path, Object.assign(getByPath(baseData, path, {}), result))
       }
+
       if (extension?.errors) {
         errors.push(...extension.errors)
+      }
+    }
+
+    const data = { ...rootData.data }
+    for (const [path, info] of this.extensionDocuments) {
+      const operationData = getWithPath(data, path)
+
+      if (Array.isArray(operationData)) {
+        await Promise.all(operationData.map(d => extendData(data, d.data, d.path, info)))
+      } else if (Array.isArray(operationData.data)) {
+        await Promise.all(operationData.data.map((d, i) => extendData(data, d, `${path}[${i}]`, info)))
+      } else {
+        await extendData(data, operationData.data, path, info)
       }
     }
 

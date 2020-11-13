@@ -7,7 +7,7 @@ import { observablePromise } from '../utils/observablePromise'
 import { createOperation } from './createOperation'
 
 describe('extension', () => {
-  it.only('resolves type across services', async () => {
+  it('extends type across services', async () => {
     expect.assertions(3)
     const typeDefsBase = gql`
       type User @key(fields: "id") {
@@ -93,6 +93,103 @@ describe('extension', () => {
           email: 'abc@domain.de',
         },
       },
+    })
+  })
+
+  it('extends lists across servies', async () => {
+    const typeDefsBase = gql`
+      type Post @key(fields: "id") {
+        id: ID!
+        title: String
+        text: String
+      }
+
+      extend type Query {
+        posts: [Post]
+      }
+    `
+
+    const resolversBase: Resolvers = {
+      Query: {
+        posts: () => [
+          {
+            id: 'postA',
+            title: 'TitleA',
+            text: 'TextA',
+          },
+          {
+            id: 'postB',
+            title: 'TitleB',
+            text: 'TextB',
+          },
+        ],
+      },
+    }
+
+    const typeDefsExtension = gql`
+      type User {
+        name: String!
+      }
+
+      extend type Post @key(fields: "id") {
+        id: ID!
+        user: User!
+      }
+    `
+
+    const resovlersExtension: Resolvers = {
+      Post: {
+        user: root => ({
+          name: `User for ${root.id}`,
+        }),
+      },
+    }
+
+    const query = gql`
+      query {
+        posts {
+          title
+          text
+          user {
+            name
+          }
+        }
+      }
+    `
+
+    const link = createLocalFederationLink({
+      services: [
+        {
+          name: 'base',
+          link: createLocalSchemaLink({ typeDefs: typeDefsBase, resolvers: resolversBase }),
+        },
+        {
+          name: 'extension',
+          link: createLocalSchemaLink({ typeDefs: typeDefsExtension, resolvers: resovlersExtension }),
+        },
+      ],
+    })
+
+    const result = await observablePromise(link.request(createOperation(query)))
+
+    expect(result!.errors).toBeUndefined()
+    expect(result!.data).toEqual({
+      posts: [
+        {
+          title: 'TitleA',
+          text: 'TextA',
+          user: {
+            name: 'User for postA',
+          },
+        },
+        {
+          title: 'TitleB',
+          text: 'TextB',
+          user: {
+            name: 'User for postB',
+          },
+        },
+      ],
     })
   })
 })

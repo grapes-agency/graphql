@@ -22,6 +22,7 @@ import { mergeSelectionSets } from './mergeSelectionSets'
 export interface DocumentInfo {
   service: LocalFederationService
   document: DocumentNode
+  extension: boolean
   typename?: string
   keyDocument?: DocumentNode
 }
@@ -177,7 +178,6 @@ export const distributeQuery = (
 
         if (!parentField) {
           const entityKeys = getEntityKeys(parent.type)
-
           if (entityKeys.length === 0) {
             if (fieldPath.length > 1) {
               errors.push(new GraphQLError(`Cannot query field ${fieldName} on type ${typeName}`))
@@ -186,6 +186,7 @@ export const distributeQuery = (
           }
 
           const external = findService(typeName, fieldName, services)
+
           if (!external) {
             errors.push(new GraphQLError(`unable to resolve field "${fieldName}" of type "${typeName}"`))
             return null
@@ -243,7 +244,8 @@ export const distributeQuery = (
     currentService: LocalFederationService,
     document: DocumentNode,
     typename?: string,
-    keyDocument?: DocumentNode
+    keyDocument?: DocumentNode,
+    extension = false
   ) => {
     const externals = new Map<string, Map<LocalFederationService, Map<string, ExternalQuery>>>()
 
@@ -301,6 +303,7 @@ export const distributeQuery = (
     documents.set(path, {
       service: currentService,
       document: processedDocument,
+      extension,
       typename,
       keyDocument,
     })
@@ -308,7 +311,14 @@ export const distributeQuery = (
     for (const [mergePath, serviceMap] of externals) {
       for (const [externalService, externalTypeMap] of serviceMap) {
         for (const [externalTypename, externalDocument] of externalTypeMap) {
-          processDocument(mergePath, externalService, externalDocument.query, externalTypename, externalDocument.keyQuery)
+          processDocument(
+            mergePath,
+            externalService,
+            externalDocument.query,
+            externalTypename,
+            externalDocument.keyQuery,
+            !externalDocument.externalType
+          )
         }
       }
     }
