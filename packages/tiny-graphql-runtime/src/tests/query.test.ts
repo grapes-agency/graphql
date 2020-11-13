@@ -228,10 +228,7 @@ describe('query', () => {
     `
 
     const runtime = new GraphQLRuntime({ typeDefs, resolvers: {} })
-    const result = await runtime.execute({ query })
-    expect(result.errors).toHaveLength(1)
-    expect(result.errors![0].message).toEqual('Cannot return null for non-nullable field Query.test')
-    expect(result.data).toEqual({ test: null })
+    expect(runtime.execute({ query })).rejects.toThrow('Cannot return null for non-nullable field Query.test')
   })
 
   it('resolves arrays', async () => {
@@ -278,14 +275,22 @@ describe('query', () => {
 
   it('returns null', async () => {
     const typeDefs = gql`
+      type Test {
+        prop: String
+      }
+
       type Query {
         test: String
+        list: [Test!]
       }
     `
 
     const query = gql`
       query Test {
         test
+        list {
+          prop
+        }
       }
     `
 
@@ -295,6 +300,7 @@ describe('query', () => {
     expect(result.errors).toBeUndefined()
     expect(result.data).toEqual({
       test: null,
+      list: null,
     })
   })
   it("won't resolve null", async () => {
