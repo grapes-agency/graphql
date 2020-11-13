@@ -3,9 +3,11 @@ import { DataSourceError } from './DataSourceError'
 type Body = ArrayBuffer | ArrayBufferView | string | object
 type URLSearchParamsInit = URLSearchParams | Record<string, any>
 
-type RawRequestOptions = Omit<RequestInit, 'body'>
+export type RawRequestOptions = Omit<RequestInit, 'body'>
 
-interface BaseRequestOptions extends RawRequestOptions {
+export type RawRequestOptionsWithParams = RawRequestOptions & { params: URLSearchParamsInit }
+
+export interface BaseRequestOptions extends RawRequestOptions {
   path: string
   body?: Body
   params?: URLSearchParamsInit
@@ -87,6 +89,9 @@ export abstract class RESTDataSource {
       const searchParams = new URLSearchParams()
       if (options.params) {
         for (const [name, value] of Object.entries(options.params)) {
+          if (typeof value === 'undefined') {
+            continue
+          }
           if (Array.isArray(value)) {
             value.map(v => searchParams.append(name, v))
           } else {
@@ -159,15 +164,15 @@ export abstract class RESTDataSource {
     return this.fetch<Response>({ method: 'HEAD', path, params, ...init })
   }
 
-  protected post<TResult = any>(path: string, body?: Body, init?: RawRequestOptions & { params: URLSearchParamsInit }) {
+  protected post<TResult = any>(path: string, body?: Body, init?: RawRequestOptionsWithParams) {
     return this.fetch<TResult>({ method: 'POST', path, body, ...init })
   }
 
-  protected patch<TResult = any>(path: string, body?: Body, init?: RawRequestOptions & { params: URLSearchParamsInit }) {
+  protected patch<TResult = any>(path: string, body?: Body, init?: RawRequestOptionsWithParams) {
     return this.fetch<TResult>({ method: 'PATH', path, body, ...init })
   }
 
-  protected put<TResult = any>(path: string, body?: Body, init?: RawRequestOptions & { params: URLSearchParamsInit }) {
+  protected put<TResult = any>(path: string, body?: Body, init?: RawRequestOptionsWithParams) {
     return this.fetch<TResult>({ method: 'PUT', path, body, ...init })
   }
 
