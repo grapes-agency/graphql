@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.28](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.0.0-alpha.27...@grapes-agency/apollo-link-local-schema@1.0.0-alpha.28) (2020-11-13)
+
+
+### Bug Fixes
+
+* **apollo-link-local-schema:** Make __resolveReference async ([58545a6](https://github.com/grapes-agency/graphql/commit/58545a6d2211615da64671f3758f6f72bf7b789c))
+
+
+
+
+
 # [1.0.0-alpha.27](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.0.0-alpha.26...@grapes-agency/apollo-link-local-schema@1.0.0-alpha.27) (2020-11-06)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-schema

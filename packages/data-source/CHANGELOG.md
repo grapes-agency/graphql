@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.10](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.9...@grapes-agency/data-source@1.0.0-alpha.10) (2020-11-13)
+
+
+### Bug Fixes
+
+* **data-source:** Fixed types ([5bd85d4](https://github.com/grapes-agency/graphql/commit/5bd85d411b302269e4c672760de5ad70da35992b))
+
+
+
+
+
 # [1.0.0-alpha.9](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.8...@grapes-agency/data-source@1.0.0-alpha.9) (2020-11-13)
 
 
