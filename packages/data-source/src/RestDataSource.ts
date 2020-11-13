@@ -1,7 +1,7 @@
 import { DataSourceError } from './DataSourceError'
 
-type Body = ArrayBuffer | ArrayBufferView | string | object
-type URLSearchParamsInit = URLSearchParams | Record<string, any>
+export type Body = ArrayBuffer | ArrayBufferView | string | object
+export type URLSearchParamsInit = URLSearchParams | Record<string, any>
 
 export type RawRequestOptions = Omit<RequestInit, 'body'>
 
@@ -36,12 +36,14 @@ export abstract class RESTDataSource {
   }
 
   protected async errorFromResponse(response: Response) {
-    return new DataSourceError(`${response.status}: ${response.statusText}`, {
+    const body = await this.parseBody(response)
+
+    return new DataSourceError(`${response.status}: ${body || response.statusText || 'Request failed'}`, {
       response: {
         url: response.url,
         status: response.status,
         statusText: response.statusText,
-        body: await this.parseBody(response),
+        body,
       },
     })
   }
@@ -64,16 +66,16 @@ export abstract class RESTDataSource {
 
   protected willSendRequest?(request: RequestOptions): void
 
-  protected onResponse<TResult = any>(response: Response, request: Request): Response | Promise<TResult> {
+  protected async onResponse<TResult = any>(response: Response, request: Request): Promise<Response | TResult | void> {
     if (request.method === 'HEAD') {
       return response
     }
 
     if (response.ok) {
       return this.parseBody(response)
-    } else {
-      throw this.errorFromResponse(response)
     }
+
+    this.onError(await this.errorFromResponse(response), request)
   }
 
   protected onError(error: Error, _request: Request) {
