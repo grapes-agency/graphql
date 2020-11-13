@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.9](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.8...@grapes-agency/data-source@1.0.0-alpha.9) (2020-11-13)
+
+
+### Features
+
+* **data-source:** Exclude undefined from params ([0d07daa](https://github.com/grapes-agency/graphql/commit/0d07daa81976326291182b684aed60ba136c020b))
+
+
+
+
+
 # [1.0.0-alpha.8](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.7...@grapes-agency/data-source@1.0.0-alpha.8) (2020-11-12)
 
 
