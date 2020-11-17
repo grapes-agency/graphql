@@ -1,7 +1,7 @@
-import { Operation, gql, FetchResult, Observable } from '@apollo/client/core'
+import { Operation, FetchResult, Observable } from '@apollo/client/core'
 import type { LocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
 import { unwrapType } from '@grapes-agency/tiny-graphql-runtime/helpers'
-import type { TypeNode } from 'graphql'
+import type { DocumentNode, TypeNode } from 'graphql'
 
 interface LocalFederationServiceOptions {
   name: string
@@ -29,13 +29,36 @@ export class LocalFederationService {
   }
 
   public queryType(typeName: string) {
-    return this.execute({
-      query: gql`
-        query ResolveType {
-          __resolveType(typeName: "${typeName}")
-        }
-      `,
-    })
+    const query: DocumentNode = {
+      kind: 'Document',
+      definitions: [
+        {
+          kind: 'OperationDefinition',
+          operation: 'query',
+          selectionSet: {
+            kind: 'SelectionSet',
+            selections: [
+              {
+                kind: 'Field',
+                name: {
+                  kind: 'Name',
+                  value: '__resolveType',
+                },
+                arguments: [
+                  {
+                    kind: 'Argument',
+                    name: { kind: 'Name', value: 'typeName' },
+                    value: { kind: 'StringValue', value: typeName },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    }
+
+    return this.execute({ query })
   }
 
   public execute<T extends Record<string, any> = Record<string, any>>(
