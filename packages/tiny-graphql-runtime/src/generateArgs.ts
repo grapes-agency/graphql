@@ -29,19 +29,19 @@ export const generateArgs = (
     }
 
     if (isObjectValue(valueNode)) {
-      return valueNode.fields.reduce(
-        (combinedField, f) => ({
+      return valueNode.fields.reduce((combinedField, f) => {
+        const value = getValue(f.value)
+        if (value === undefined) {
+          return combinedField
+        }
+
+        return {
           ...combinedField,
-          [f.name.value]: getValue(f.value),
-        }),
-        {}
-      )
+          [f.name.value]: value,
+        }
+      }, {})
     }
     if (isVariableValue(valueNode)) {
-      if (!(valueNode.name.value in specifiedArgs)) {
-        throw new GraphQLError(`Missing variable ${valueNode.name.value}`)
-      }
-
       return specifiedArgs[valueNode.name.value]
     }
 
@@ -60,6 +60,10 @@ export const generateArgs = (
 
     if (value === null && inputValue.type.kind === 'NonNullType') {
       throw new GraphQLError(`Cannot use null for non-nullable argument ${name}`)
+    }
+
+    if (value === undefined) {
+      return combinedArgs
     }
 
     return {

@@ -158,7 +158,7 @@ describe('Arguments', () => {
     const runtime = new GraphQLRuntime({ typeDefs, resolvers })
     const result = await runtime.execute({
       query: gql`
-        query($testArg: String) {
+        query($testArg: String!) {
           test(name: $testArg)
         }
       `,
