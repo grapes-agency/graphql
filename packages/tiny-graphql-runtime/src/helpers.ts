@@ -17,6 +17,8 @@ import type {
   InputObjectTypeDefinitionNode,
 } from 'graphql'
 
+import type { Resolver, FieldResolver } from './interfaces'
+
 export const isFragmentDefinition = (node: ASTNode): node is FragmentDefinitionNode => node.kind === 'FragmentDefinition'
 export const isDirectiveDefinition = (node: ASTNode): node is DirectiveDefinitionNode => node.kind === 'DirectiveDefinition'
 export const isOperationDefinition = (node: ASTNode): node is OperationDefinitionNode => node.kind === 'OperationDefinition'
@@ -37,3 +39,5 @@ export const isNonNullType = (node: ASTNode): node is NonNullTypeNode => node.ki
 export const isListType = (node: ASTNode): node is ListTypeNode => node.kind === 'ListType'
 export const isDeepListType = (node: ASTNode): node is ListTypeNode =>
   isNonNullType(node) ? isDeepListType(node.type) : isListType(node)
+
+export const isFieldResolver = <T>(resolver: Resolver<T>): resolver is FieldResolver<T> => typeof resolver === 'function'

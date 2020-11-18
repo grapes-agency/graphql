@@ -14,10 +14,12 @@ import {
   ObjectTypeExtensionNode,
   isScalarType,
   InputObjectTypeDefinitionNode,
+  visit,
 } from 'graphql'
 import Observable from 'zen-observable'
 
 import { PromiseRegistry } from './PromiseRegistry'
+import type { SchemaDirectiveVisitor } from './SchemaDirectiveVisitor'
 import { asyncIteratorToObservable } from './asyncIteratorToObservable'
 import { defaultDirectives } from './defaultDirectives'
 import { generateArgs } from './generateArgs'
@@ -37,7 +39,14 @@ import {
   isObjectTypeExtension,
   isInputObjectTypeDefinition,
 } from './helpers'
-import type { Resolvers, Resolver, FieldResolver, SubscriptionResolver, ResolveInfo } from './interfaces'
+import type {
+  Resolvers,
+  Resolver,
+  FieldResolver,
+  SubscriptionResolver,
+  ResolveInfo,
+  FieldDefinitionNodeWithResolver,
+} from './interfaces'
 
 const typenameFieldDefinition: FieldDefinitionNode = {
   kind: 'FieldDefinition',
@@ -79,6 +88,7 @@ interface GraphQLRuntimeOptions {
   resolvers?: Resolvers
   defaultResolver?: Resolver
   allowObjectExtensionAsTypes?: boolean
+  schemaDirectives?: Record<string, SchemaDirectiveVisitor>
 }
 
 interface ExecutionOptions {
@@ -110,6 +120,7 @@ export class GraphQLRuntime {
     resolvers = {},
     defaultResolver: dResolver = defaultResolver,
     allowObjectExtensionAsTypes = false,
+    schemaDirectives = {},
   }: GraphQLRuntimeOptions) {
     this.defaultResolver = dResolver
     this.resolvers = resolvers
@@ -187,6 +198,46 @@ export class GraphQLRuntime {
     const possibleSubscriptionType = this.objectMap.get(subscriptionTypeName)
     this.subscriptionType =
       possibleSubscriptionType && possibleSubscriptionType.kind === 'ObjectTypeDefinition' ? possibleSubscriptionType : null
+
+    this.mapResolversToFields({ typeDefs, resolvers, schemaDirectives })
+  }
+
+  protected mapResolversToFields({
+    typeDefs,
+    resolvers,
+    schemaDirectives,
+  }: Required<Pick<GraphQLRuntimeOptions, 'typeDefs' | 'resolvers' | 'schemaDirectives'>>) {
+    let currentObjectTypeDefinition: ObjectTypeDefinitionNode
+    visit(typeDefs, {
+      ObjectTypeDefinition: objectType => {
+        currentObjectTypeDefinition = objectType
+      },
+      FieldDefinition: field => {
+        let resolver: Resolver
+        if (currentObjectTypeDefinition) {
+          resolver = asResolvers(resolvers[currentObjectTypeDefinition.name.value])[field.name.value]
+        }
+        ;(field as FieldDefinitionNodeWithResolver).resolve = resolver! || defaultResolver
+
+        field.directives?.forEach(directive => {
+          const directiveName = directive.name.value
+          const directiveDefinition = this.directiveMap.get(directiveName)
+          if (directiveDefinition) {
+            schemaDirectives[directiveName]?.visitFieldDefinition?.(
+              field as FieldDefinitionNodeWithResolver,
+              generateArgs({
+                inputMap: this.inputMap,
+                enumMap: this.enumMap,
+                scalarMap: this.scalarMap,
+                specifiedArgs: {},
+                argDefinitions: directiveDefinition.arguments,
+                args: directive.arguments,
+              })
+            )
+          }
+        })
+      },
+    })
   }
 
   protected processDirectives(selection: SelectionNode, args: Record<string, any>) {
@@ -323,9 +374,12 @@ export class GraphQLRuntime {
               selection,
             }
 
-            const resolver = (field === typenameFieldDefinition
-              ? () => type.name.value
-              : asResolvers(this.resolvers[type.name.value])[field.name.value] || this.defaultResolver) as Resolver
+            const resolver =
+              field === typenameFieldDefinition
+                ? () => type.name.value
+                : type.name.value === '__SUBSCRIPTON__'
+                ? this.defaultResolver
+                : (field as FieldDefinitionNodeWithResolver).resolve
 
             let generatedArgs = {}
             try {
@@ -350,7 +404,7 @@ export class GraphQLRuntime {
                 new Observable(observer => {
                   const processsedData = processSelectionSet(
                     selectionSet,
-                    { ...type, name: { kind: 'Name', value: '__' } },
+                    { ...type, name: { kind: 'Name', value: '__SUBSCRIPTON__' } },
                     result
                   )
 

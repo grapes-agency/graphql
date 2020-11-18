@@ -1,6 +1,9 @@
 import gql from 'graphql-tag'
 
 import { GraphQLRuntime } from '../GraphQLRuntime'
+import type { SchemaDirectiveVisitor } from '../SchemaDirectiveVisitor'
+import { isFieldResolver } from '../helpers'
+import type { Resolvers } from '../interfaces'
 
 describe('Directives', () => {
   it('skips fields', async () => {
@@ -55,6 +58,75 @@ describe('Directives', () => {
     expect(result2.data).toEqual({
       test: {
         propA: 'PropA',
+      },
+    })
+  })
+
+  it('supports schema directives', async () => {
+    const visitor: SchemaDirectiveVisitor = {
+      visitFieldDefinition(field, args) {
+        const { resolve } = field
+        if (!isFieldResolver(resolve)) {
+          return
+        }
+        field.resolve = async (...params) => {
+          const result = await resolve(...params)
+          if (typeof result === 'string') {
+            if (args.type === 'UPPER') {
+              return result.toUpperCase()
+            } else if (args.type === 'LOWER') {
+              return result.toLowerCase()
+            }
+            return result
+          }
+        }
+      },
+    }
+
+    const typeDefs = gql`
+      enum CASE_TYPE {
+        UPPER
+        LOWER
+      }
+
+      directive @case(type: CASE_TYPE!) on FIELD_DEFINITION
+
+      type Test {
+        propA: String @case(type: "UPPER")
+        propB: String @case(type: "LOWER")
+      }
+
+      type Query {
+        test: Test
+      }
+    `
+
+    const resolvers: Resolvers = {
+      Test: {
+        propA: root => `${root.propA}xyz`,
+      },
+      Query: {
+        test: () => ({ propA: 'abc', propB: 'DEF' }),
+      },
+    }
+
+    const query = gql`
+      query {
+        test {
+          propA
+          propB
+        }
+      }
+    `
+
+    const runtime = new GraphQLRuntime({ typeDefs, resolvers, schemaDirectives: { case: visitor } })
+    const result = await runtime.execute({ query })
+
+    expect(result.errors).toBeUndefined()
+    expect(result.data).toEqual({
+      test: {
+        propA: 'ABCXYZ',
+        propB: 'def',
       },
     })
   })

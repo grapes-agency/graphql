@@ -39,3 +39,7 @@ export type Resolvers<Context = any> = Record<
   string,
   GraphQLScalarType | ({ __resolveType?: TypeResolver } & Record<string, Resolver<Context>>)
 >
+
+export interface FieldDefinitionNodeWithResolver extends FieldDefinitionNode {
+  resolve: Resolver
+}

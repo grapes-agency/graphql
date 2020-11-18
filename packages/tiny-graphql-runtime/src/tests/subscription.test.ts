@@ -30,7 +30,7 @@ const fakeAsyncIterator = <T>(callback: (push: (data: T) => void) => void | (() 
 }
 
 describe('Subscriptions', () => {
-  it('resolve simple notification', async callback => {
+  it('resolve simple subscription', async callback => {
     const typeDefs = gql`
       type Test {
         prop: String!
@@ -85,7 +85,7 @@ describe('Subscriptions', () => {
     })
   })
 
-  it('resolve nested notification', async callback => {
+  it('resolve nested subscription', async callback => {
     const typeDefs = gql`
       type Test {
         prop: Sub
