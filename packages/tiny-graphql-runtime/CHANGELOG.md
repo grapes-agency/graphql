@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.15](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.14...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.15) (2020-11-18)
+
+
+### Bug Fixes
+
+* Don't reuse documents across services ([36e3b2d](https://github.com/grapes-agency/graphql/commit/36e3b2d4e98a6fdb5da2d912e4e3d6d119f9e6c9))
+* **tiny-graphql-runtime:** Don't throw on nullable args ([b581392](https://github.com/grapes-agency/graphql/commit/b58139257aa11bb9b7a94728ddcb108ba41ddc2a))
+
+
+### Features
+
+* **tiny-graphql-runtime:** Support for basic schemaDirectiveVisitor (field only atm) ([842bd02](https://github.com/grapes-agency/graphql/commit/842bd02d2a9d3db9443530f95ee73b09ac36fb29))
+* **tiny-graphql-runtime:** Validate Input Types ([7d8c0de](https://github.com/grapes-agency/graphql/commit/7d8c0de6af9628bfa10e1acf98c74ae595c76ecf))
+
+
+
+
+
 # [1.0.0-alpha.14](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.13...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.14) (2020-11-13)
 
 

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.29](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.0.0-alpha.28...@grapes-agency/apollo-link-local-schema@1.0.0-alpha.29) (2020-11-18)
+
+
+### Bug Fixes
+
+* Don't reuse documents across services ([36e3b2d](https://github.com/grapes-agency/graphql/commit/36e3b2d4e98a6fdb5da2d912e4e3d6d119f9e6c9))
+
+
+### Features
+
+* **apollo-link-local-schema:** Basic support for schema directives ([61ff88d](https://github.com/grapes-agency/graphql/commit/61ff88d549d2fda91cbb137df046a57b58b0bb4d))
+
+
+
+
+
 # [1.0.0-alpha.28](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.0.0-alpha.27...@grapes-agency/apollo-link-local-schema@1.0.0-alpha.28) (2020-11-13)
 
 
