@@ -13,6 +13,7 @@ import {
   EnumTypeDefinitionNode,
   ObjectTypeExtensionNode,
   isScalarType,
+  InputObjectTypeDefinitionNode,
 } from 'graphql'
 import Observable from 'zen-observable'
 
@@ -34,6 +35,7 @@ import {
   isNonNullType,
   unwrapType,
   isObjectTypeExtension,
+  isInputObjectTypeDefinition,
 } from './helpers'
 import type { Resolvers, Resolver, FieldResolver, SubscriptionResolver, ResolveInfo } from './interfaces'
 
@@ -91,6 +93,7 @@ interface ExecutionOptions {
 export class GraphQLRuntime {
   private resolvers: Resolvers
   private objectMap: Map<string, ObjectTypeDefinitionNode | ObjectTypeExtensionNode>
+  private inputMap: Map<string, InputObjectTypeDefinitionNode>
   private unionMap: Map<string, Set<string>>
   private interfaceMap: Map<string, Set<string>>
   private scalarMap: Map<string, GraphQLScalarType | null>
@@ -129,6 +132,10 @@ export class GraphQLRuntime {
 
         return [definition.name.value, definition]
       })
+    )
+
+    this.inputMap = new Map(
+      typeDefs.definitions.filter(isInputObjectTypeDefinition).map(definition => [definition.name.value, definition])
     )
 
     this.interfaceMap = new Map(
@@ -204,7 +211,14 @@ export class GraphQLRuntime {
 
       return {
         ...combinedDirectives,
-        [directive.name.value]: generateArgs(schemaDirective.arguments, directive.arguments, args),
+        [directive.name.value]: generateArgs({
+          inputMap: this.inputMap,
+          enumMap: this.enumMap,
+          scalarMap: this.scalarMap,
+          specifiedArgs: args,
+          argDefinitions: schemaDirective.arguments,
+          args: directive.arguments,
+        }),
       }
     }, {})
   }
@@ -315,7 +329,14 @@ export class GraphQLRuntime {
 
             let generatedArgs = {}
             try {
-              generatedArgs = generateArgs(field.arguments, selection.arguments, args)
+              generatedArgs = generateArgs({
+                inputMap: this.inputMap,
+                enumMap: this.enumMap,
+                scalarMap: this.scalarMap,
+                specifiedArgs: args,
+                argDefinitions: field.arguments,
+                args: selection.arguments,
+              })
             } catch (error) {
               data[fieldName] = null
               errors.push(error)

@@ -167,4 +167,101 @@ describe('Arguments', () => {
     expect(result.errors).toHaveLength(1)
     expect(result.errors![0].message).toEqual('Missing variable testArg')
   })
+
+  it('validates args', async () => {
+    expect.assertions(7)
+    const typeDefs = gql`
+      enum Side {
+        LEFT
+        RIGHT
+      }
+
+      input Address {
+        street: String
+        side: Side
+      }
+
+      input Data {
+        name: String!
+        age: Int
+        address: Address!
+      }
+
+      type Mutation {
+        update(data: Data!): Int
+      }
+    `
+
+    const resolvers: Resolvers = {
+      Mutation: {
+        update: (_root, args) => {
+          expect(args).toEqual({
+            data: {
+              name: 'x',
+              age: 10,
+              address: {
+                side: 'LEFT',
+              },
+            },
+          })
+
+          return args.data.age
+        },
+      },
+    }
+
+    const runtime = new GraphQLRuntime({ typeDefs, resolvers })
+    let result = await runtime.execute({
+      query: gql`
+        mutation($data: Data!) {
+          update(data: $data)
+        }
+      `,
+      args: {
+        data: {},
+      },
+    })
+
+    expect(result.data!.update).toBeNull()
+    expect(result.errors![0].message).toEqual('Cannot use null for non-nullable argument data.name')
+
+    result = await runtime.execute({
+      query: gql`
+        mutation($data: Data!) {
+          update(data: $data)
+        }
+      `,
+      args: {
+        data: {
+          name: 'x',
+          address: {
+            side: 'UP',
+          },
+        },
+      },
+    })
+
+    expect(result.data!.update).toBeNull()
+    expect(result.errors![0].message).toEqual('Cannot use UP as enum Side for argument data.address.side')
+
+    result = await runtime.execute({
+      query: gql`
+        mutation($data: Data!) {
+          update(data: $data)
+        }
+      `,
+      args: {
+        data: {
+          name: 'x',
+          age: 10,
+          address: {
+            side: 'LEFT',
+          },
+        },
+      },
+    })
+
+    expect(result.errors).toBeUndefined()
+    expect(result.data!.update).toEqual(10)
+  })
 })

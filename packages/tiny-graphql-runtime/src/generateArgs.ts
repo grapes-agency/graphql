@@ -1,51 +1,116 @@
 import {
   ValueNode,
-  NullValueNode,
-  VariableNode,
-  ListValueNode,
-  ObjectValueNode,
   GraphQLError,
   InputValueDefinitionNode,
   ArgumentNode,
+  TypeNode,
+  InputObjectTypeDefinitionNode,
+  EnumTypeDefinitionNode,
+  GraphQLScalarType,
 } from 'graphql'
 
-const isNullValue = (node: ValueNode): node is NullValueNode => node.kind === 'NullValue'
-const isVariableValue = (node: ValueNode): node is VariableNode => node.kind === 'Variable'
-const isListValue = (node: ValueNode): node is ListValueNode => node.kind === 'ListValue'
-const isObjectValue = (node: ValueNode): node is ObjectValueNode => node.kind === 'ObjectValue'
-
-export const generateArgs = (
-  argDefinitions: ReadonlyArray<InputValueDefinitionNode> = [],
-  args: ReadonlyArray<ArgumentNode> = [],
+interface GenerateArgsOptions {
+  inputMap: Map<string, InputObjectTypeDefinitionNode>
+  enumMap: Map<string, EnumTypeDefinitionNode>
+  scalarMap: Map<string, GraphQLScalarType | null>
   specifiedArgs: Record<string, any>
-) => {
-  const getValue = (valueNode: ValueNode): any => {
-    if (isNullValue(valueNode)) {
+  argDefinitions?: ReadonlyArray<InputValueDefinitionNode>
+  args?: ReadonlyArray<ArgumentNode>
+}
+
+export const generateArgs = ({
+  inputMap,
+  enumMap,
+  scalarMap,
+  specifiedArgs,
+  argDefinitions = [],
+  args = [],
+}: GenerateArgsOptions) => {
+  const getValue = (value: ValueNode): any => {
+    switch (value.kind) {
+      case 'NullValue': {
+        return null
+      }
+      case 'ListValue': {
+        return value.values.map(getValue)
+      }
+      case 'Variable': {
+        return specifiedArgs[value.name.value]
+      }
+      case 'ObjectValue': {
+        return value.fields.reduce((combinedFields, field) => {
+          const fieldValue = getValue(field.value)
+          if (fieldValue === undefined) {
+            return combinedFields
+          }
+          return {
+            ...combinedFields,
+            [field.name.value]: fieldValue,
+          }
+        }, {})
+      }
+      default: {
+        return value.value
+      }
+    }
+  }
+
+  const mapValue = (value: any, name: string, type: TypeNode): any => {
+    if (type.kind === 'NonNullType') {
+      if (value === null) {
+        throw new GraphQLError(`Cannot use null for non-nullable argument ${name}`)
+      }
+
+      return mapValue(value, name, type.type)
+    }
+
+    if (value === null) {
       return null
     }
 
-    if (isListValue(valueNode)) {
-      return valueNode.values.map(getValue)
+    if (type.kind === 'ListType') {
+      if (!Array.isArray(value)) {
+        throw new GraphQLError(`Cannot use non-array for list argument ${name}`)
+      }
+
+      return value.map(v => mapValue(v, name, type.type))
     }
 
-    if (isObjectValue(valueNode)) {
-      return valueNode.fields.reduce((combinedField, f) => {
-        const value = getValue(f.value)
-        if (value === undefined) {
-          return combinedField
-        }
+    const typeName = type.name.value
 
-        return {
-          ...combinedField,
-          [f.name.value]: value,
-        }
-      }, {})
-    }
-    if (isVariableValue(valueNode)) {
-      return specifiedArgs[valueNode.name.value]
+    if (scalarMap.has(typeName)) {
+      return scalarMap.get(typeName)!.serialize(value)
     }
 
-    return valueNode.value
+    if (enumMap.has(typeName)) {
+      const enumValue = enumMap.get(typeName)!.values?.find(v => v.name.value === value)
+      if (enumValue) {
+        return enumValue.name.value
+      }
+
+      throw new GraphQLError(`Cannot use ${value} as enum ${typeName} for argument ${name}`)
+    }
+
+    if (inputMap.has(typeName)) {
+      if (typeof value !== 'object' || Array.isArray(value) || value === null) {
+        throw new GraphQLError(`Cannot use non-object for list argument ${name}`)
+      }
+
+      const inputType = inputMap.get(typeName)!
+
+      return (
+        inputType.fields?.reduce((combinedFields, field) => {
+          const fieldName = field.name.value
+
+          return {
+            ...combinedFields,
+            [fieldName]: mapValue(value[fieldName] ?? null, `${name}.${field.name.value}`, field.type),
+          }
+        }, {}) ?? null
+      )
+    }
+
+    throw new GraphQLError(`Unknown type ${typeName} for list argument ${name}`)
   }
 
   return argDefinitions.reduce((combinedArgs, inputValue) => {
@@ -58,11 +123,9 @@ export const generateArgs = (
       ? getValue(inputValue.defaultValue)
       : null
 
-    if (value === null && inputValue.type.kind === 'NonNullType') {
-      throw new GraphQLError(`Cannot use null for non-nullable argument ${name}`)
-    }
+    const mappedValue = mapValue(value, name, inputValue.type)
 
-    if (value === undefined) {
+    if (mappedValue === undefined) {
       return combinedArgs
     }
 
