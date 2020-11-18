@@ -75,6 +75,13 @@ const asResolvers = (possibleResolvers?: Resolvers[string]): WithoutScalar => {
   return possibleResolvers
 }
 
+const cloneTypeDefs = (typeDefs: DocumentNode): DocumentNode =>
+  visit(typeDefs, {
+    FieldDefinition: fieldDefinition => ({
+      ...fieldDefinition,
+    }),
+  })
+
 const defaultResolver: Resolver = (root, _args, _context, { field }) => {
   if (!root || typeof root !== 'object') {
     return null
@@ -116,12 +123,14 @@ export class GraphQLRuntime {
   public subscriptionType: ObjectTypeDefinitionNode | null
 
   constructor({
-    typeDefs,
+    typeDefs: originalTypeDefs,
     resolvers = {},
     defaultResolver: dResolver = defaultResolver,
     allowObjectExtensionAsTypes = false,
     schemaDirectives = {},
   }: GraphQLRuntimeOptions) {
+    const typeDefs = cloneTypeDefs(originalTypeDefs)
+
     this.defaultResolver = dResolver
     this.resolvers = resolvers
 
@@ -206,18 +215,26 @@ export class GraphQLRuntime {
     typeDefs,
     resolvers,
     schemaDirectives,
-  }: Required<Pick<GraphQLRuntimeOptions, 'typeDefs' | 'resolvers' | 'schemaDirectives'>>) {
-    let currentObjectTypeDefinition: ObjectTypeDefinitionNode
-    visit(typeDefs, {
-      ObjectTypeDefinition: objectType => {
-        currentObjectTypeDefinition = objectType
+  }: Required<Pick<GraphQLRuntimeOptions, 'typeDefs' | 'resolvers' | 'schemaDirectives'>>): DocumentNode {
+    let currentObjectName: string | null = null
+    return visit(typeDefs, {
+      ObjectTypeDefinition: {
+        enter: objectTypeDefinition => {
+          currentObjectName = objectTypeDefinition.name.value
+        },
+      },
+      ObjectTypeExtension: {
+        enter: objectTypeExtension => {
+          currentObjectName = objectTypeExtension.name.value
+        },
+        leave: () => {
+          currentObjectName = null
+        },
       },
       FieldDefinition: field => {
-        let resolver: Resolver
-        if (currentObjectTypeDefinition) {
-          resolver = asResolvers(resolvers[currentObjectTypeDefinition.name.value])[field.name.value]
-        }
-        ;(field as FieldDefinitionNodeWithResolver).resolve = resolver! || defaultResolver
+        ;(field as FieldDefinitionNodeWithResolver).resolve = currentObjectName
+          ? asResolvers(resolvers[currentObjectName])[field.name.value] ?? this.defaultResolver
+          : this.defaultResolver
 
         field.directives?.forEach(directive => {
           const directiveName = directive.name.value

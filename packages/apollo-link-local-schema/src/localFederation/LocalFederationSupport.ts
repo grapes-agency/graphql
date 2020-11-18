@@ -42,7 +42,7 @@ export class LocalFederationSupport {
           const referenceResolver = resolvers[typename]?.__resolveReference
 
           if (!referenceResolver) {
-            throw new GraphQLError(`Missing ${typename}.__resolveReference`)
+            throw new GraphQLError(`Missing ${typename}.__resolveReference in service ${this.name}`)
           }
 
           const resolvedReference = await referenceResolver(reference, context, info)

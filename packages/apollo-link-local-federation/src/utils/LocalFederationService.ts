@@ -1,4 +1,4 @@
-import { Operation, FetchResult, Observable } from '@apollo/client/core'
+import type { Operation, FetchResult, Observable } from '@apollo/client/core'
 import type { LocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
 import { unwrapType } from '@grapes-agency/tiny-graphql-runtime/helpers'
 import type { DocumentNode, TypeNode } from 'graphql'

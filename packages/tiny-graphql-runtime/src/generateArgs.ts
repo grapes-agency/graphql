@@ -78,6 +78,10 @@ export const generateArgs = ({
 
     const typeName = type.name.value
 
+    if (typeName.startsWith('__')) {
+      return value
+    }
+
     if (scalarMap.has(typeName)) {
       return scalarMap.get(typeName)!.serialize(value)
     }
