@@ -1,6 +1,6 @@
 import { ApolloLink, Operation, NextLink, FetchResult, Observable } from '@apollo/client/core'
 import { getMainDefinition } from '@apollo/client/utilities'
-import { Resolvers, GraphQLRuntime } from '@grapes-agency/tiny-graphql-runtime'
+import { Resolvers, GraphQLRuntime, SchemaDirectiveVisitor } from '@grapes-agency/tiny-graphql-runtime'
 import { DocumentNode, OperationDefinitionNode, ObjectTypeDefinitionNode } from 'graphql'
 import merge from 'lodash/merge'
 
@@ -11,9 +11,10 @@ import { mergeDocuments, splitDocument } from './utils'
 
 interface LocalSchemaLinkOptions<Context = any> {
   typeDefs: DocumentNode | Array<DocumentNode>
-  resolvers: Resolvers<Context> | Array<Resolvers<Context>>
+  resolvers?: Resolvers<Context> | Array<Resolvers<Context>>
   context?: Context | (() => Context)
   introspection?: boolean
+  schemaDirectives?: Record<string, SchemaDirectiveVisitor>
 }
 
 interface FederatedInfo {
@@ -36,7 +37,7 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
       return
     }
 
-    const { typeDefs, resolvers, context, introspection = true } = this.options
+    const { typeDefs, resolvers, context, introspection = true, schemaDirectives } = this.options
 
     let mergedTypeDefs = Array.isArray(typeDefs) ? mergeDocuments(typeDefs) : typeDefs
     const resolversArray = Array.isArray(resolvers) ? resolvers : [resolvers]
@@ -56,6 +57,7 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
       typeDefs: mergedTypeDefs,
       resolvers: mergedResolvers,
       allowObjectExtensionAsTypes: Boolean(this.federated),
+      schemaDirectives,
     })
     this.context = context
 
