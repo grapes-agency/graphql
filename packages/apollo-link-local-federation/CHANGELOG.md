@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.12](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.11...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.12) (2020-11-26)
+
+
+### Features
+
+* **apollo-link-local-federation:** Replaced gql tag with own implementation ([7e6b2f6](https://github.com/grapes-agency/graphql/commit/7e6b2f6de7a3ce7b686e40c31e5a9e424718e62e))
+
+
+
+
+
 # [1.0.0-alpha.11](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.10...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.11) (2020-11-18)
 
 
