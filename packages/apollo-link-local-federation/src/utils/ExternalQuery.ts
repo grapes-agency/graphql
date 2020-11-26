@@ -1,7 +1,7 @@
-import { gql } from '@apollo/client/core'
 import { FieldNode, DocumentNode, SelectionSetNode, OperationDefinitionNode } from 'graphql'
 
 import { mergeSelectionSets } from './mergeSelectionSets'
+import { parseDocument } from './parseDocument'
 
 export class ExternalQuery {
   protected fields = new Set<FieldNode>()
@@ -19,7 +19,7 @@ export class ExternalQuery {
   }
 
   get keyQuery(): DocumentNode {
-    const keyDocuments: Array<DocumentNode> = Array.from(this.keys).map(key => gql`{${key}}`)
+    const keyDocuments: Array<DocumentNode> = Array.from(this.keys).map(key => parseDocument(key))
 
     const selectionSet = keyDocuments.reduce<SelectionSetNode>(
       (set, keyDocument) => mergeSelectionSets(set, (keyDocument.definitions[0] as OperationDefinitionNode).selectionSet),
