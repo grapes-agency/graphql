@@ -13,11 +13,11 @@ import {
   EnumTypeDefinitionNode,
   ObjectTypeExtensionNode,
   isScalarType,
-  InputObjectTypeDefinitionNode,
   visit,
 } from 'graphql'
 import Observable from 'zen-observable'
 
+import { GraphQLCompountError } from './GraphQLCompountError'
 import { PromiseRegistry } from './PromiseRegistry'
 import type { SchemaDirectiveVisitor } from './SchemaDirectiveVisitor'
 import { asyncIteratorToObservable } from './asyncIteratorToObservable'
@@ -46,6 +46,7 @@ import type {
   SubscriptionResolver,
   ResolveInfo,
   FieldDefinitionNodeWithResolver,
+  InputObjectTypeDefinitionNodeWithResolver,
 } from './interfaces'
 
 const typenameFieldDefinition: FieldDefinitionNode = {
@@ -80,6 +81,7 @@ const cloneTypeDefs = (typeDefs: DocumentNode): DocumentNode =>
     FieldDefinition: fieldDefinition => ({
       ...fieldDefinition,
     }),
+    InputValueDefinition: inputValueDefinition => ({ ...inputValueDefinition }),
   })
 
 const defaultResolver: Resolver = (root, _args, _context, { field }) => {
@@ -110,7 +112,7 @@ interface ExecutionOptions {
 export class GraphQLRuntime {
   private resolvers: Resolvers
   private objectMap: Map<string, ObjectTypeDefinitionNode | ObjectTypeExtensionNode>
-  private inputMap: Map<string, InputObjectTypeDefinitionNode>
+  private inputMap: Map<string, InputObjectTypeDefinitionNodeWithResolver>
   private unionMap: Map<string, Set<string>>
   private interfaceMap: Map<string, Set<string>>
   private scalarMap: Map<string, GraphQLScalarType | null>
@@ -124,12 +126,13 @@ export class GraphQLRuntime {
 
   constructor({
     typeDefs: originalTypeDefs,
-    resolvers = {},
+    resolvers: originalResolvers = {},
     defaultResolver: dResolver = defaultResolver,
     allowObjectExtensionAsTypes = false,
     schemaDirectives = {},
   }: GraphQLRuntimeOptions) {
     const typeDefs = cloneTypeDefs(originalTypeDefs)
+    const resolvers = { ...originalResolvers }
 
     this.defaultResolver = dResolver
     this.resolvers = resolvers
@@ -155,7 +158,9 @@ export class GraphQLRuntime {
     )
 
     this.inputMap = new Map(
-      typeDefs.definitions.filter(isInputObjectTypeDefinition).map(definition => [definition.name.value, definition])
+      typeDefs.definitions
+        .filter(isInputObjectTypeDefinition)
+        .map(definition => [definition.name.value, definition as InputObjectTypeDefinitionNodeWithResolver])
     )
 
     this.interfaceMap = new Map(
@@ -215,9 +220,10 @@ export class GraphQLRuntime {
     typeDefs,
     resolvers,
     schemaDirectives,
-  }: Required<Pick<GraphQLRuntimeOptions, 'typeDefs' | 'resolvers' | 'schemaDirectives'>>): DocumentNode {
+  }: Required<Pick<GraphQLRuntimeOptions, 'typeDefs' | 'resolvers' | 'schemaDirectives'>>) {
     let currentObjectName: string | null = null
-    return visit(typeDefs, {
+
+    visit(typeDefs, {
       ObjectTypeDefinition: {
         enter: objectTypeDefinition => {
           currentObjectName = objectTypeDefinition.name.value
@@ -231,6 +237,28 @@ export class GraphQLRuntime {
           currentObjectName = null
         },
       },
+      InputValueDefinition: inputValue => {
+        inputValue.directives?.forEach(directive => {
+          const directiveName = directive.name.value
+
+          const directiveDefinition = this.directiveMap.get(directiveName)
+          if (directiveDefinition) {
+            schemaDirectives[directiveName]?.visitInputValueDefinition?.(
+              inputValue,
+              generateArgs({
+                parentName: `@${directiveName}`,
+                inputMap: this.inputMap,
+                enumMap: this.enumMap,
+                scalarMap: this.scalarMap,
+                argDefinitions: directiveDefinition.arguments,
+                args: directive.arguments,
+              })
+            )
+          } else {
+            throw new GraphQLError(`Cannot use schemaDirective for unknown directive @${directiveName}`)
+          }
+        })
+      },
       FieldDefinition: field => {
         ;(field as FieldDefinitionNodeWithResolver).resolve = currentObjectName
           ? asResolvers(resolvers[currentObjectName])[field.name.value] ?? this.defaultResolver
@@ -243,10 +271,10 @@ export class GraphQLRuntime {
             schemaDirectives[directiveName]?.visitFieldDefinition?.(
               field as FieldDefinitionNodeWithResolver,
               generateArgs({
+                parentName: `@${directiveName}`,
                 inputMap: this.inputMap,
                 enumMap: this.enumMap,
                 scalarMap: this.scalarMap,
-                specifiedArgs: {},
                 argDefinitions: directiveDefinition.arguments,
                 args: directive.arguments,
               })
@@ -277,9 +305,11 @@ export class GraphQLRuntime {
         return combinedDirectives
       }
 
+      const directiveName = directive.name.value
       return {
         ...combinedDirectives,
-        [directive.name.value]: generateArgs({
+        [directiveName]: generateArgs({
+          parentName: `@${directiveName}`,
           inputMap: this.inputMap,
           enumMap: this.enumMap,
           scalarMap: this.scalarMap,
@@ -401,6 +431,7 @@ export class GraphQLRuntime {
             let generatedArgs = {}
             try {
               generatedArgs = generateArgs({
+                parentName: fieldName,
                 inputMap: this.inputMap,
                 enumMap: this.enumMap,
                 scalarMap: this.scalarMap,
@@ -410,7 +441,12 @@ export class GraphQLRuntime {
               })
             } catch (error) {
               data[fieldName] = null
-              errors.push(error)
+
+              if (error instanceof GraphQLCompountError) {
+                errors.push(...error.errors)
+              } else {
+                errors.push(error)
+              }
               break
             }
 

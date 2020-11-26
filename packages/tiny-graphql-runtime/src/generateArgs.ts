@@ -1,31 +1,46 @@
+/* eslint-disable no-await-in-loop */
 import {
   ValueNode,
   GraphQLError,
   InputValueDefinitionNode,
   ArgumentNode,
   TypeNode,
-  InputObjectTypeDefinitionNode,
   EnumTypeDefinitionNode,
   GraphQLScalarType,
+  InputObjectTypeDefinitionNode,
 } from 'graphql'
 
+import { GraphQLCompountError } from './GraphQLCompountError'
+import type { InputObjectTypeDefinitionNodeWithResolver, InputValueDefinitionNodeWithResolver } from './interfaces'
+
+type Path = Array<string | number>
+
 interface GenerateArgsOptions {
-  inputMap: Map<string, InputObjectTypeDefinitionNode>
+  parentName: string
+  inputMap: Map<string, InputObjectTypeDefinitionNodeWithResolver>
   enumMap: Map<string, EnumTypeDefinitionNode>
   scalarMap: Map<string, GraphQLScalarType | null>
-  specifiedArgs: Record<string, any>
+  specifiedArgs?: Record<string, any>
   argDefinitions?: ReadonlyArray<InputValueDefinitionNode>
   args?: ReadonlyArray<ArgumentNode>
 }
 
 export const generateArgs = ({
+  parentName,
   inputMap,
   enumMap,
   scalarMap,
-  specifiedArgs,
+  specifiedArgs = {},
   argDefinitions = [],
   args = [],
 }: GenerateArgsOptions) => {
+  const errors: Array<GraphQLError> = []
+  const getInputMappingError = (message: string, path: Path, originalError?: GraphQLError) =>
+    new GraphQLError(message, null, null, null, null, originalError, {
+      ...(originalError?.extensions || {}),
+      inputPath: [parentName, ...(originalError?.extensions?.inputPath || path)],
+    })
+
   const getValue = (value: ValueNode): any => {
     switch (value.kind) {
       case 'NullValue': {
@@ -55,13 +70,35 @@ export const generateArgs = ({
     }
   }
 
-  const mapValue = (value: any, name: string, type: TypeNode): any => {
+  const mapValue = (
+    value: any,
+    path: Path,
+    inputValue: InputValueDefinitionNodeWithResolver,
+    inputObjectType: InputObjectTypeDefinitionNode | null,
+    arg: ArgumentNode | null,
+    type: TypeNode,
+    resolve: boolean
+  ): any => {
+    if (resolve && inputValue.resolve) {
+      try {
+        value = inputValue.resolve(value, { field: inputValue, parentType: inputObjectType, arg })
+      } catch (error) {
+        if (error instanceof GraphQLCompountError) {
+          errors.push(...error.errors.map(e => getInputMappingError(e.message, path, e)))
+        } else {
+          errors.push(getInputMappingError(error.message, path, error))
+        }
+        return null
+      }
+    }
+
     if (type.kind === 'NonNullType') {
       if (value === null) {
-        throw new GraphQLError(`Cannot use null for non-nullable argument ${name}`)
+        errors.push(getInputMappingError(`Cannot use null for non-nullable argument ${path.join('.')}`, path))
+        return null
       }
 
-      return mapValue(value, name, type.type)
+      return mapValue(value, path, inputValue, inputObjectType, arg, type.type, false)
     }
 
     if (value === null) {
@@ -70,10 +107,11 @@ export const generateArgs = ({
 
     if (type.kind === 'ListType') {
       if (!Array.isArray(value)) {
-        throw new GraphQLError(`Cannot use non-array for list argument ${name}`)
+        errors.push(getInputMappingError(`Cannot use non-array for list argument ${path.join('.')}`, path))
+        return null
       }
 
-      return value.map(v => mapValue(v, name, type.type))
+      return value.map((v, index) => mapValue(v, [...path, index], inputValue, inputObjectType, arg, type.type, true))
     }
 
     const typeName = type.name.value
@@ -83,7 +121,12 @@ export const generateArgs = ({
     }
 
     if (scalarMap.has(typeName)) {
-      return scalarMap.get(typeName)!.serialize(value)
+      try {
+        return scalarMap.get(typeName)!.serialize(value)
+      } catch (error) {
+        errors.push(getInputMappingError(error.message, path, error))
+        return null
+      }
     }
 
     if (enumMap.has(typeName)) {
@@ -92,34 +135,48 @@ export const generateArgs = ({
         return enumValue.name.value
       }
 
-      throw new GraphQLError(`Cannot use ${value} as enum ${typeName} for argument ${name}`)
+      errors.push(getInputMappingError(`Cannot use ${value} as enum ${typeName} for argument ${path.join('.')}`, path))
+      return null
     }
 
     if (inputMap.has(typeName)) {
       if (typeof value !== 'object' || Array.isArray(value) || value === null) {
-        throw new GraphQLError(`Cannot use non-object for list argument ${name}`)
+        errors.push(getInputMappingError(`Cannot use non-object for list argument ${path.join('.')}`, path))
+        return null
       }
 
       const inputType = inputMap.get(typeName)!
+      if (!inputType.fields) {
+        return null
+      }
 
-      return (
-        inputType.fields?.reduce((combinedFields, field) => {
-          const fieldName = field.name.value
+      const combinedFields: Record<string, any> = {}
+      for (const field of inputType.fields) {
+        const fieldName = field.name.value
 
-          return {
-            ...combinedFields,
-            [fieldName]: mapValue(value[fieldName] ?? null, `${name}.${field.name.value}`, field.type),
-          }
-        }, {}) ?? null
-      )
+        combinedFields[fieldName] = mapValue(
+          value[fieldName] ?? null,
+          [...path, fieldName],
+          field,
+          inputType,
+          arg,
+          field.type,
+          true
+        )
+      }
+
+      return combinedFields
     }
 
-    throw new GraphQLError(`Unknown type ${typeName} for list argument ${name}`)
+    errors.push(getInputMappingError(`Unknown type ${typeName} for list argument ${path.join('.')}`, path))
+    return null
   }
 
-  return argDefinitions.reduce((combinedArgs, inputValue) => {
+  const combinedArgs: Record<string, any> = {}
+
+  for (const inputValue of argDefinitions) {
     const name = inputValue.name.value
-    const fieldArgument = args.find(a => a.name.value === name)
+    const fieldArgument = args.find(a => a.name.value === name) || null
 
     const value = fieldArgument
       ? getValue(fieldArgument.value)
@@ -127,15 +184,24 @@ export const generateArgs = ({
       ? getValue(inputValue.defaultValue)
       : null
 
-    const mappedValue = mapValue(value, name, inputValue.type)
+    const mappedValue = mapValue(
+      value,
+      [name],
+      inputValue as InputValueDefinitionNodeWithResolver,
+      null,
+      fieldArgument,
+      inputValue.type,
+      true
+    )
 
-    if (mappedValue === undefined) {
-      return combinedArgs
+    if (mappedValue !== undefined) {
+      combinedArgs[name] = mappedValue
     }
+  }
 
-    return {
-      ...combinedArgs,
-      [name]: value,
-    }
-  }, {})
+  if (errors.length > 0) {
+    throw new GraphQLCompountError(errors)
+  }
+
+  return combinedArgs
 }

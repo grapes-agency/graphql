@@ -201,6 +201,7 @@ describe('Arguments', () => {
               age: 10,
               address: {
                 side: 'LEFT',
+                street: null,
               },
             },
           })

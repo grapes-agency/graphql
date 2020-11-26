@@ -130,4 +130,56 @@ describe('Directives', () => {
       },
     })
   })
+
+  it('supports non standard input value resolver', async () => {
+    expect.assertions(2)
+    const visitor: SchemaDirectiveVisitor = {
+      visitInputValueDefinition(input) {
+        input.resolve = root => {
+          if (Array.isArray(root)) {
+            return [...root, 'y']
+          }
+
+          return `${root}y`
+        }
+      },
+    }
+
+    const typeDefs = gql`
+      directive @test on INPUT_FIELD_DEFINITION
+
+      input Data {
+        prop: String @test
+        list: [String!]! @test
+      }
+
+      type Mutation {
+        test(data: Data): Boolean
+      }
+    `
+
+    const resolvers: Resolvers = {
+      Mutation: {
+        test: (_root, args) => {
+          expect(args).toEqual({
+            data: {
+              prop: 'xy',
+              list: ['xy', 'yy'],
+            },
+          })
+          return true
+        },
+      },
+    }
+
+    const query = gql`
+      mutation {
+        test(data: { prop: "x", list: ["x"] })
+      }
+    `
+
+    const runtime = new GraphQLRuntime({ typeDefs, resolvers, schemaDirectives: { test: visitor } })
+    const result = await runtime.execute({ query })
+    expect(result.errors).toBeUndefined()
+  })
 })

@@ -5,6 +5,9 @@ import type {
   FragmentDefinitionNode,
   FieldNode,
   ObjectTypeExtensionNode,
+  InputValueDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  ArgumentNode,
 } from 'graphql'
 
 export interface SubscriptionResolver<Context = any, T = any> {
@@ -42,4 +45,21 @@ export type Resolvers<Context = any> = Record<
 
 export interface FieldDefinitionNodeWithResolver extends FieldDefinitionNode {
   resolve: Resolver
+}
+
+export interface InputResolveInfo {
+  parentType: InputObjectTypeDefinitionNode | null
+  field: InputValueDefinitionNode
+  arg: ArgumentNode | null
+}
+
+export type InputResolver = (root: any, info: InputResolveInfo) => any
+
+export interface InputValueDefinitionNodeWithResolver extends InputValueDefinitionNode {
+  resolve?: InputResolver
+}
+
+export interface InputObjectTypeDefinitionNodeWithResolver extends Omit<InputObjectTypeDefinitionNode, 'fields'> {
+  fields: ReadonlyArray<InputValueDefinitionNodeWithResolver>
+  resolve?: InputResolver
 }
