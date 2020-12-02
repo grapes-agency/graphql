@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.13](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.12...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.13) (2020-12-02)
+
+
+### Bug Fixes
+
+* **apollo-link-local-federation:** Support inline fragements and interfaces ([7744ba5](https://github.com/grapes-agency/graphql/commit/7744ba5b32d8067afa0e35b370ce594679e04dc6))
+
+
+
+
+
 # [1.0.0-alpha.12](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.11...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.12) (2020-11-26)
 
 
