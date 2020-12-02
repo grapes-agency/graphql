@@ -1,5 +1,10 @@
 import { gql } from '@apollo/client/core'
-import { isObjectTypeExtension, isObjectTypeDefinition, unwrapType } from '@grapes-agency/tiny-graphql-runtime/helpers'
+import {
+  isObjectTypeExtension,
+  isObjectTypeDefinition,
+  isInterfaceTypeDefinition,
+  unwrapType,
+} from '@grapes-agency/tiny-graphql-runtime/helpers'
 import {
   DocumentNode,
   DefinitionNode,
@@ -12,6 +17,7 @@ import {
   StringValueNode,
   specifiedScalarTypes,
   GraphQLError,
+  InterfaceTypeDefinitionNode,
 } from 'graphql'
 
 import { ExternalQuery } from './ExternalQuery'
@@ -27,7 +33,7 @@ export interface DocumentInfo {
   keyDocument?: DocumentNode
 }
 
-const getEntityKeys = (type: ObjectTypeDefinitionNode | ObjectTypeExtensionNode) =>
+const getEntityKeys = (type: ObjectTypeDefinitionNode | ObjectTypeExtensionNode | InterfaceTypeDefinitionNode) =>
   type.directives
     ?.filter(directive => directive.name.value === 'key')
     .map(directive => (directive.arguments![0].value as StringValueNode).value) || []
@@ -137,6 +143,18 @@ export const distributeQuery = (
     FragmentSpread: fragmentSpread => {
       fragmentHints.set(fragmentSpread.name.value, [...fieldPath])
     },
+    InlineFragment: {
+      enter: inlinefragment => {
+        const parent = fieldPath[fieldPath.length - 1]
+        fieldPath.push({
+          ...parent,
+          type: parent.service.getType(inlinefragment.typeCondition?.name.value ?? '')!,
+        })
+      },
+      leave: () => {
+        fieldPath.pop()
+      },
+    },
     FragmentDefinition: {
       enter: fragmentDefinition => {
         const name = fragmentDefinition.name.value
@@ -168,7 +186,10 @@ export const distributeQuery = (
 
         const parent = fieldPath[fieldPath.length - 1]
 
-        if (typeof parent.type === 'string' || (!isObjectTypeDefinition(parent.type) && !isObjectTypeExtension(parent.type))) {
+        if (
+          typeof parent.type === 'string' ||
+          (!isObjectTypeDefinition(parent.type) && !isObjectTypeExtension(parent.type) && !isInterfaceTypeDefinition(parent.type))
+        ) {
           errors.push(new GraphQLError('Subselection on non object type field is impossible'))
           return null
         }
