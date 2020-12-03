@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.14](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.13...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.14) (2020-12-03)
+
+
+### Bug Fixes
+
+* **apollo-link-local-federation:** Sanitize should not override existing data ([8803d9f](https://github.com/grapes-agency/graphql/commit/8803d9f00178a2737bf34b7227878134899c66e5))
+
+
+
+
+
 # [1.0.0-alpha.13](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.12...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.13) (2020-12-02)
 
 
