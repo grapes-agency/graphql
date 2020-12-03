@@ -1,5 +1,6 @@
 import { isOperationDefinition, isFragmentDefinition } from '@grapes-agency/tiny-graphql-runtime/helpers'
 import type { DocumentNode, SelectionSetNode } from 'graphql'
+import merge from 'lodash/merge'
 
 export const sanitizeResults = (data: any, document: DocumentNode) => {
   const fragments = new Map(
@@ -18,13 +19,13 @@ export const sanitizeResults = (data: any, document: DocumentNode) => {
     selectionSet.selections.forEach(selection => {
       switch (selection.kind) {
         case 'InlineFragment': {
-          Object.assign(processedData, processSelectionSet(selection.selectionSet, currentData))
+          merge(processedData, processSelectionSet(selection.selectionSet, currentData))
           break
         }
         case 'FragmentSpread': {
           const fragment = fragments.get(selection.name.value)
           if (fragment) {
-            Object.assign(processedData, processSelectionSet(fragment.selectionSet, currentData))
+            merge(processedData, processSelectionSet(fragment.selectionSet, currentData))
           }
           break
         }
