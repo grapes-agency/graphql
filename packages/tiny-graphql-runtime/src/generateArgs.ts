@@ -79,6 +79,7 @@ export const generateArgs = ({
     type: TypeNode,
     resolve: boolean
   ): any => {
+    value = value === undefined ? null : value
     if (resolve && inputValue.resolve) {
       try {
         value = inputValue.resolve(value, { field: inputValue, parentType: inputObjectType, arg })
