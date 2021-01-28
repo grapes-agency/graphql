@@ -56,7 +56,7 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
     this.runtime = new GraphQLRuntime({
       typeDefs: mergedTypeDefs,
       resolvers: mergedResolvers,
-      allowObjectExtensionAsTypes: Boolean(this.federated),
+      allowObjectExtensionAsTypes: true,
       schemaDirectives,
     })
     this.context = context
