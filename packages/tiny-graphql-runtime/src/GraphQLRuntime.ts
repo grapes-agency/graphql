@@ -196,22 +196,41 @@ export class GraphQLRuntime {
         ]),
     ])
     const schemaDefinition = typeDefs.definitions.find(isSchemaDefinition)
+    const toObjectTypeDefinition = (
+      type?: ObjectTypeDefinitionNode | ObjectTypeExtensionNode
+    ): ObjectTypeDefinitionNode | null => {
+      if (!type) {
+        return null
+      }
+      if (type.kind === 'ObjectTypeDefinition') {
+        return type
+      }
+
+      if (!allowObjectExtensionAsTypes) {
+        return null
+      }
+
+      return {
+        ...type,
+        kind: 'ObjectTypeDefinition',
+      }
+    }
+
     const queryTypeName =
       schemaDefinition?.operationTypes.find(operationType => operationType.operation === 'query')?.type.name.value || 'Query'
     const possibleQueryType = this.objectMap.get(queryTypeName)
-    this.queryType = possibleQueryType && possibleQueryType.kind === 'ObjectTypeDefinition' ? possibleQueryType : null
+    this.queryType = toObjectTypeDefinition(possibleQueryType)
 
     const mutationTypeName =
       schemaDefinition?.operationTypes.find(operationType => operationType.operation === 'mutation')?.type.name.value ||
       'Mutation'
     const possibleMutationType = this.objectMap.get(mutationTypeName)
-    this.mutationType = possibleMutationType && possibleMutationType.kind === 'ObjectTypeDefinition' ? possibleMutationType : null
+    this.mutationType = toObjectTypeDefinition(possibleMutationType)
     const subscriptionTypeName =
       schemaDefinition?.operationTypes.find(operationType => operationType.operation === 'subscription')?.type.name.value ||
       'Subscription'
     const possibleSubscriptionType = this.objectMap.get(subscriptionTypeName)
-    this.subscriptionType =
-      possibleSubscriptionType && possibleSubscriptionType.kind === 'ObjectTypeDefinition' ? possibleSubscriptionType : null
+    this.subscriptionType = toObjectTypeDefinition(possibleSubscriptionType)
 
     this.mapResolversToFields({ typeDefs, resolvers, schemaDirectives })
   }
