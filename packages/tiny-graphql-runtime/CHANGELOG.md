@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.18](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.17...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.18) (2021-01-28)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** Correctly convert extensions to definitions when allowObjectExtentionsAsTypes is true ([6ce16fa](https://github.com/grapes-agency/graphql/commit/6ce16fa30713ab5e3e39c584dfe1da7a44942c59))
+
+
+
+
+
 # [1.0.0-alpha.17](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.16...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.17) (2020-12-15)
 
 
