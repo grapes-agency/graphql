@@ -18,6 +18,7 @@ import {
   specifiedScalarTypes,
   GraphQLError,
   InterfaceTypeDefinitionNode,
+  FieldDefinitionNode,
 } from 'graphql'
 
 import { ExternalQuery } from './ExternalQuery'
@@ -31,6 +32,7 @@ export interface DocumentInfo {
   extension: boolean
   typename?: string
   keyDocument?: DocumentNode
+  fieldDefinition?: FieldDefinitionNode
 }
 
 const getEntityKeys = (type: ObjectTypeDefinitionNode | ObjectTypeExtensionNode | InterfaceTypeDefinitionNode) =>
@@ -84,6 +86,7 @@ interface ServiceHint {
   typeName: string
   fieldName: string
   externalType: boolean
+  parentFieldDefinition: FieldDefinitionNode
   keys: Array<string>
   path: Array<string>
 }
@@ -97,7 +100,12 @@ export const distributeQuery = (
   service: LocalFederationService,
   services: Array<LocalFederationService>
 ): [null | Map<string, DocumentInfo>, Array<GraphQLError>] => {
-  const fieldPath: Array<{ type: DefinitionNode | string; name: string; service: LocalFederationService }> = []
+  const fieldPath: Array<{
+    type: DefinitionNode | string
+    name: string
+    service: LocalFederationService
+    fieldDefinition?: FieldDefinitionNode
+  }> = []
   const injectFields: Array<Set<string>> = []
   const fragmentHints = new Map<string, typeof fieldPath>()
   const fragments = new Map<string, FragmentDefinitionNode>()
@@ -220,6 +228,7 @@ export const distributeQuery = (
             typeName,
             fieldName,
             externalType: isObjectTypeExtension(parent.type),
+            parentFieldDefinition: parent.fieldDefinition!,
           }
 
           fieldPath.push({ name: aliasName, ...external })
@@ -232,7 +241,7 @@ export const distributeQuery = (
 
         const type = parent.service.getType(parentField.type)
         if (type) {
-          fieldPath.push({ type, name: aliasName, service: parent.service })
+          fieldPath.push({ type, name: aliasName, service: parent.service, fieldDefinition: parentField })
           return field
         }
 
@@ -266,7 +275,8 @@ export const distributeQuery = (
     document: DocumentNode,
     typename?: string,
     keyDocument?: DocumentNode,
-    extension = false
+    extension = false,
+    fieldDefinition?: FieldDefinitionNode
   ) => {
     const externals = new Map<string, Map<LocalFederationService, Map<string, ExternalQuery>>>()
 
@@ -276,7 +286,14 @@ export const distributeQuery = (
           return
         }
 
-        const { service: externalService, typeName, path: mergePath, keys, externalType } = field.serviceHint
+        const {
+          service: externalService,
+          typeName,
+          path: mergePath,
+          keys,
+          externalType,
+          parentFieldDefinition,
+        } = field.serviceHint
         const joinedPath = mergePath.slice(1).join('.')
         if (!externals.has(joinedPath)) {
           externals.set(joinedPath, new Map())
@@ -289,7 +306,7 @@ export const distributeQuery = (
 
         const externalTypeMap = externalServiceMap.get(externalService)!
         if (!externalTypeMap.has(typeName)) {
-          externalTypeMap.set(typeName, new ExternalQuery(typeName, externalType))
+          externalTypeMap.set(typeName, new ExternalQuery(typeName, externalType, parentFieldDefinition))
         }
 
         delete field.serviceHint
@@ -327,18 +344,20 @@ export const distributeQuery = (
       extension,
       typename,
       keyDocument,
+      fieldDefinition,
     })
 
     for (const [mergePath, serviceMap] of externals) {
       for (const [externalService, externalTypeMap] of serviceMap) {
-        for (const [externalTypename, externalDocument] of externalTypeMap) {
+        for (const [externalTypename, externalQuery] of externalTypeMap) {
           processDocument(
             mergePath,
             externalService,
-            externalDocument.query,
+            externalQuery.query,
             externalTypename,
-            externalDocument.keyQuery,
-            !externalDocument.externalType
+            externalQuery.keyQuery,
+            !externalQuery.externalType,
+            externalQuery.fieldDefinition
           )
         }
       }

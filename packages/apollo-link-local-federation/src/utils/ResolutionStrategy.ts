@@ -1,7 +1,8 @@
 /* eslint-disable no-await-in-loop */
 import { FetchResult, Operation } from '@apollo/client/core'
 import { getMainDefinition, Observable } from '@apollo/client/utilities'
-import { DocumentNode, FieldNode, SelectionNode, visit, GraphQLError } from 'graphql'
+import { isNonNullType, isListType } from '@grapes-agency/tiny-graphql-runtime/helpers'
+import { DocumentNode, FieldNode, SelectionNode, visit, GraphQLError, NamedTypeNode } from 'graphql'
 import getByPath from 'lodash/get'
 import mergeWith from 'lodash/mergeWith'
 import setByPath from 'lodash/set'
@@ -145,7 +146,7 @@ export class ResolutionStrategy {
 
   protected async executeRest(rootData: FetchResult, operation: Operation): Promise<FetchResult> {
     const errors = [...(rootData.errors || [])]
-
+    const extensionCache = new Map<string, any>()
     const extendData = async (
       baseData: Record<string, any>,
       operationData: Record<string, any> | null,
@@ -168,32 +169,77 @@ export class ResolutionStrategy {
         operationData: sanitizedOperationData,
       }
 
-      const observable = info.service.execute(operation)
-      const extension = await observablePromise(observable)
+      const cacheKey = `${info.service.name}_${JSON.stringify(operation.query)}_${JSON.stringify(operation.variables)}`
+      let result: any
+      if (extensionCache.has(cacheKey)) {
+        result = extensionCache.get(cacheKey)
+      } else {
+        const observable = info.service.execute(operation)
+        const extension = await observablePromise(observable)
+        result = extension?.data?.__resolveType || extension?.data?.__extendType || null
+        extensionCache.set(cacheKey, result)
 
-      const result = extension?.data?.__resolveType || extension?.data?.__extendType || null
-
+        if (extension?.errors) {
+          errors.push(...extension.errors)
+        }
+      }
       if (result === null && !info.extension) {
         setByPath(baseData, path, null)
       } else {
         setByPath(baseData, path, Object.assign(getByPath(baseData, path, {}), result))
       }
+    }
 
-      if (extension?.errors) {
-        errors.push(...extension.errors)
+    const clearNull = (baseData: Record<string, any>, path: string) => {
+      setByPath(
+        baseData,
+        path,
+        (getByPath(baseData, path) as Array<any>).filter(d => d !== null)
+      )
+    }
+
+    const getTypeInfo = (info: DocumentInfo) => {
+      let fieldType = info.fieldDefinition?.type ?? null
+      let required = false
+      let listItemRequired = false
+
+      if (fieldType && isNonNullType(fieldType)) {
+        required = true
+        fieldType = fieldType.type
+      }
+
+      if (fieldType && isListType(fieldType)) {
+        fieldType = fieldType.type
+        if (isNonNullType(fieldType)) {
+          listItemRequired = true
+          fieldType = fieldType.type
+        }
+      }
+
+      return {
+        fieldType: fieldType as null | NamedTypeNode,
+        required,
+        listItemRequired,
       }
     }
 
     const data = { ...rootData.data }
     for (const [path, info] of this.extensionDocuments) {
       const operationData = getWithPath(data, path)
+      const typeInfo = getTypeInfo(info)
 
-      if (Array.isArray(operationData)) {
-        await Promise.all(operationData.map(d => extendData(data, d.data, d.path, info)))
-      } else if (Array.isArray(operationData.data)) {
-        await Promise.all(operationData.data.map((d, i) => extendData(data, d, `${path}[${i}]`, info)))
-      } else {
-        await extendData(data, operationData.data, path, info)
+      for (const opData of operationData) {
+        if (Array.isArray(opData.data)) {
+          await Promise.all(opData.data.map((d, i) => extendData(data, d, `${opData.path}[${i}]`, info)))
+          if (typeInfo.listItemRequired) {
+            clearNull(data, opData.path)
+          }
+        } else {
+          await extendData(data, opData.data, opData.path, info)
+          if (typeInfo.required && getByPath(data, path) === null) {
+            throw new GraphQLError(`Cannot return null for non-nullable field ${typeInfo.fieldType!.name.value}`)
+          }
+        }
       }
     }
 

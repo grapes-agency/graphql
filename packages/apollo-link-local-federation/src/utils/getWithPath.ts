@@ -3,30 +3,49 @@ interface PathObj {
   path: string
 }
 
-export const getWithPath = (data: Array<Record<string, any>> | Record<string, any>, path: string): PathObj | Array<PathObj> => {
-  const get = (d: any, property: string) => {
-    if (typeof d !== 'object' || d === null) {
-      return null
+export const getWithPath = (data: Array<Record<string, any>> | Record<string, any>, path: string) => {
+  if (Array.isArray(data)) {
+    const operationData: Array<PathObj> = []
+    data.forEach((subData, index) =>
+      operationData.push(
+        ...getWithPath(subData, path).map(d => ({
+          path: `[${index}].${d.path}`,
+          data: d.data,
+        }))
+      )
+    )
+    return operationData
+  }
+
+  const segments = path.split('.')
+  const currentPath: Array<string> = []
+  let currentData = data
+
+  const operationData: Array<PathObj> = []
+  for (const segment of segments) {
+    currentPath.push(segment)
+    currentData = currentData[segment]
+
+    if (Array.isArray(currentData) && currentPath.length < segments.length) {
+      const pathLeft = segments.slice(currentPath.length).join('.')
+      currentData.forEach((currentSubData, index) =>
+        operationData.push(
+          ...getWithPath(currentSubData, pathLeft).map(d => ({
+            path: `${currentPath.join('.')}[${index}].${d.path}`,
+            data: d.data,
+          }))
+        )
+      )
+      break
     }
-    return d[property]
   }
 
-  let current: any = { data, path: '' }
-
-  for (const segment of path.split('.')) {
-    if (Array.isArray(current.data)) {
-      current = current.data.map((c: any, i: number) => ({
-        data: get(c, segment),
-        path: `${current.path}[${i}].${segment}`,
-      }))
-    } else {
-      current.data = get(current.data, segment)
-      current.path = `${current.path}.${segment}`
-    }
+  if (currentPath.length === segments.length) {
+    operationData.push({
+      path,
+      data: currentData,
+    })
   }
 
-  if (Array.isArray(current)) {
-    return current.map(c => ({ data: c.data, path: c.path.substring(1) }))
-  }
-  return { data: current.data, path: current.path.substring(1) }
+  return operationData
 }

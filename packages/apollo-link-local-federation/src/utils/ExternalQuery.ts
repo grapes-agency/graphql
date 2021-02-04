@@ -1,4 +1,4 @@
-import { FieldNode, DocumentNode, SelectionSetNode, OperationDefinitionNode } from 'graphql'
+import { FieldNode, DocumentNode, SelectionSetNode, OperationDefinitionNode, FieldDefinitionNode } from 'graphql'
 
 import { mergeSelectionSets } from './mergeSelectionSets'
 import { parseDocument } from './parseDocument'
@@ -6,7 +6,7 @@ import { parseDocument } from './parseDocument'
 export class ExternalQuery {
   protected fields = new Set<FieldNode>()
   protected keys = new Set<string>()
-  constructor(private typeName: string, public externalType: boolean) {
+  constructor(private typeName: string, public externalType: boolean, public fieldDefinition: FieldDefinitionNode) {
     //
   }
 
