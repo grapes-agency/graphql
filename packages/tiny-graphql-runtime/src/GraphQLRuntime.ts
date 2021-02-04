@@ -491,18 +491,22 @@ export class GraphQLRuntime {
                 )
               } else {
                 promiseRegistry.add(
-                  Promise.resolve(resolver(parentData, generatedArgs, context, resolveInfo)).then(result => {
-                    if (!isSubscriptionResolver(result)) {
-                      data[fieldName] = null
-                      errors.push(
-                        new GraphQLError(`Subscription field ${field.name.value} has to return an object with subscribe function`)
+                  Promise.resolve()
+                    .then(() => resolver(parentData, generatedArgs, context, resolveInfo))
+                    .then(result => {
+                      if (!isSubscriptionResolver(result)) {
+                        data[fieldName] = null
+                        errors.push(
+                          new GraphQLError(
+                            `Subscription field ${field.name.value} has to return an object with subscribe function`
+                          )
+                        )
+                        return
+                      }
+                      data[fieldName] = asyncIteratorToObservable(result, parentData, args, context, resolveInfo).flatMap(
+                        mapSubscriptionResult
                       )
-                      return
-                    }
-                    data[fieldName] = asyncIteratorToObservable(result, parentData, args, context, resolveInfo).flatMap(
-                      mapSubscriptionResult
-                    )
-                  })
+                    })
                 )
               }
               break
@@ -510,17 +514,23 @@ export class GraphQLRuntime {
             let resultPromise: Promise<any>
             if (executeSequentially) {
               executionChain = executionChain.then(() =>
-                Promise.resolve((resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
+                Promise.resolve().then(() => (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
               )
               resultPromise = executionChain
             } else {
-              resultPromise = Promise.resolve((resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
+              resultPromise = Promise.resolve().then(() =>
+                (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo)
+              )
             }
 
             promiseRegistry.add(
               resultPromise
                 .catch(error => {
-                  errors.push(new GraphQLError(error.message, null, null, null, null, error))
+                  if (error instanceof GraphQLError) {
+                    errors.push(error)
+                  } else {
+                    errors.push(new GraphQLError(error.message, null, null, null, null, error, error.extensions))
+                  }
                   return null
                 })
                 .then(result => {
@@ -661,9 +671,12 @@ export class GraphQLRuntime {
       return data
     }
 
-    const data = processSelectionSet(mainOperation.selectionSet, mainType, rootData)
-    await promiseRegistry.all()
-
-    return { data: this.compose(data), errors: errors.length === 0 ? undefined : errors }
+    try {
+      const data = processSelectionSet(mainOperation.selectionSet, mainType, rootData)
+      await promiseRegistry.all()
+      return { data: this.compose(data), errors: errors.length === 0 ? undefined : errors }
+    } catch (error) {
+      return { data: null, errors: errors.length === 0 ? [error] : errors }
+    }
   }
 }
