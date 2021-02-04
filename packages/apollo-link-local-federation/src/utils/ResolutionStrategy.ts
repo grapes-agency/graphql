@@ -268,9 +268,13 @@ export class ResolutionStrategy {
       const subscription = observable.subscribe({
         ...observer,
         next: async result => {
-          const { data, errors } = await this.executeRest(result, operation)
-          const allErrors = [...(errors || []), ...this.distributionErrors]
-          observer.next({ data, errors: allErrors.length > 0 ? allErrors : undefined })
+          if (result.data === null) {
+            observer.next(result)
+          } else {
+            const { data, errors } = await this.executeRest(result, operation)
+            const allErrors = [...(errors || []), ...this.distributionErrors]
+            observer.next({ data, errors: allErrors.length > 0 ? allErrors : undefined })
+          }
           if (!isSubscription) {
             observer.complete()
           }
