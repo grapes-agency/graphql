@@ -1,6 +1,6 @@
 {
   "name": "@grapes-agency/apollo-link-local-schema",
-  "version": "1.0.0-alpha.32",
+  "version": "1.0.0-alpha.33",
   "description": "Lightweight local schema resolver for @apollo/client",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "@types/lodash": "^4.14.162"
   },
   "dependencies": {
-    "@grapes-agency/tiny-graphql-runtime": "^1.0.0-alpha.18",
+    "@grapes-agency/tiny-graphql-runtime": "^1.0.0-alpha.19",
     "lodash": "^4.17.20"
   },
   "publishConfig": {

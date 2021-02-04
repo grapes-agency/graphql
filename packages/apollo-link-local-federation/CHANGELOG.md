@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.17](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.16...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.17) (2021-02-04)
+
+
+### Bug Fixes
+
+* **apollo-link-local-federation:** Correctly extend deep query result ([dec2238](https://github.com/grapes-agency/graphql/commit/dec2238e8f107a54d1bc1c68649167b1a8868cee))
+* **apollo-link-local-federation:** Correctly return null data on error ([8fdf550](https://github.com/grapes-agency/graphql/commit/8fdf55049def85d4b4c8a48fcd1c41969f2dbc57))
+
+
+
+
+
 # [1.0.0-alpha.16](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0-alpha.15...@grapes-agency/apollo-link-local-federation@1.0.0-alpha.16) (2021-01-28)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-federation
