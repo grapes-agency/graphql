@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.20](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.19...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.20) (2021-02-09)
+
+
+### Features
+
+* **tiny-graphql-runtime:** Enforce skip / include directives after generating args ([1e23c4a](https://github.com/grapes-agency/graphql/commit/1e23c4a287b665a06c35f4877c890e260921c02f))
+
+
+
+
+
 # [1.0.0-alpha.19](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.18...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.19) (2021-02-04)
 
 
