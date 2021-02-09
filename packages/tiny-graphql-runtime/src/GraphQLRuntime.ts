@@ -409,13 +409,7 @@ export class GraphQLRuntime {
       for (const selection of selectionSet.selections) {
         const directives = this.processDirectives(selection, args)
 
-        if (directives.skip?.if === true) {
-          break
-        }
-
-        if (directives.include?.if === false) {
-          break
-        }
+        const skip = directives.skip?.if === true || directives.include?.if === false
 
         switch (selection.kind) {
           case 'Field': {
@@ -466,6 +460,10 @@ export class GraphQLRuntime {
               } else {
                 errors.push(error)
               }
+              break
+            }
+
+            if (skip) {
               break
             }
 
@@ -647,6 +645,9 @@ export class GraphQLRuntime {
             break
           }
           case 'FragmentSpread': {
+            if (skip) {
+              break
+            }
             const fragment = fragments[selection.name.value]
             if (!fragment) {
               errors.push(new GraphQLError(`Missing fragment ${selection.name.value}`))
@@ -657,6 +658,9 @@ export class GraphQLRuntime {
             break
           }
           case 'InlineFragment': {
+            if (skip) {
+              break
+            }
             if (selection.typeCondition?.name.value !== type.name.value) {
               break
             }
