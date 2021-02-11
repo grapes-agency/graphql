@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.21](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.20...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.21) (2021-02-11)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** Correctly check enum value ([fd96b6a](https://github.com/grapes-agency/graphql/commit/fd96b6a6822c574f2eb4b104fcaf2aa62fde5edb))
+
+
+
+
+
 # [1.0.0-alpha.20](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.19...@grapes-agency/tiny-graphql-runtime@1.0.0-alpha.20) (2021-02-09)
 
 

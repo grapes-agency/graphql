@@ -1,6 +1,6 @@
 {
   "name": "@grapes-agency/apollo-link-local-federation",
-  "version": "1.0.0-alpha.19",
+  "version": "1.0.0-alpha.20",
   "description": "Like @apollo/federation... but local",
   "main": "index.js",
   "scripts": {
@@ -21,11 +21,11 @@
   },
   "devDependencies": {
     "@apollo/client": "^3.2.5",
-    "@grapes-agency/apollo-link-local-schema": "^1.0.0-alpha.34",
+    "@grapes-agency/apollo-link-local-schema": "^1.0.0-alpha.35",
     "@types/lodash": "^4.14.162"
   },
   "dependencies": {
-    "@grapes-agency/tiny-graphql-runtime": "^1.0.0-alpha.20",
+    "@grapes-agency/tiny-graphql-runtime": "^1.0.0-alpha.21",
     "lodash": "^4.17.20"
   }
 }
