@@ -5,7 +5,6 @@ import {
   InputValueDefinitionNode,
   ArgumentNode,
   TypeNode,
-  EnumTypeDefinitionNode,
   GraphQLScalarType,
   InputObjectTypeDefinitionNode,
 } from 'graphql'
@@ -18,7 +17,7 @@ type Path = Array<string | number>
 interface GenerateArgsOptions {
   parentName: string
   inputMap: Map<string, InputObjectTypeDefinitionNodeWithResolver>
-  enumMap: Map<string, EnumTypeDefinitionNode>
+  enumMap: Map<string, Array<string>>
   scalarMap: Map<string, GraphQLScalarType | null>
   specifiedArgs?: Record<string, any>
   argDefinitions?: ReadonlyArray<InputValueDefinitionNode>
@@ -131,9 +130,9 @@ export const generateArgs = ({
     }
 
     if (enumMap.has(typeName)) {
-      const enumValue = enumMap.get(typeName)!.values?.find(v => v.name.value === value)
+      const enumValue = enumMap.get(typeName)!.find(v => v === value)
       if (enumValue) {
-        return enumValue.name.value
+        return enumValue
       }
 
       errors.push(getInputMappingError(`Cannot use ${value} as enum ${typeName} for argument ${path.join('.')}`, path))

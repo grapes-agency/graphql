@@ -10,7 +10,6 @@ import {
   GraphQLScalarType,
   DirectiveDefinitionNode,
   SelectionNode,
-  EnumTypeDefinitionNode,
   ObjectTypeExtensionNode,
   isScalarType,
   visit,
@@ -116,7 +115,7 @@ export class GraphQLRuntime {
   private unionMap: Map<string, Set<string>>
   private interfaceMap: Map<string, Set<string>>
   private scalarMap: Map<string, GraphQLScalarType | null>
-  private enumMap: Map<string, EnumTypeDefinitionNode>
+  private enumMap: Map<string, Array<string>>
   private directiveMap: Map<string, DirectiveDefinitionNode>
   private defaultResolver: Resolver
 
@@ -176,7 +175,9 @@ export class GraphQLRuntime {
     )
 
     this.enumMap = new Map(
-      typeDefs.definitions.filter(isEnumTypeDefinition).map(definition => [definition.name.value, definition])
+      typeDefs.definitions
+        .filter(isEnumTypeDefinition)
+        .map(definition => [definition.name.value, definition.values?.map(value => value.name.value) || []])
     )
 
     this.directiveMap = new Map(
@@ -560,6 +561,14 @@ export class GraphQLRuntime {
                   }
 
                   if (this.enumMap.has(fieldType)) {
+                    const possibleValues = this.enumMap.get(fieldType)!
+                    for (const r of Array.isArray(result) ? result : [result]) {
+                      if (!possibleValues.includes(r)) {
+                        errors.push(new GraphQLError(`Enum "${fieldType}" cannot represent value: "${r}"`))
+                        return null
+                      }
+                    }
+
                     data[fieldName] = result
                     return
                   }
