@@ -134,8 +134,7 @@ export const generateArgs = ({
       if (enumValue) {
         return enumValue
       }
-
-      errors.push(getInputMappingError(`Cannot use ${value} as enum ${typeName} for argument ${path.join('.')}`, path))
+      errors.push(getInputMappingError(`Enum "${typeName}" cannot represent value: "${value}"`, path))
       return null
     }
 
