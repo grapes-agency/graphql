@@ -10,6 +10,7 @@ import setByPath from 'lodash/set'
 import type { LocalFederationService } from './LocalFederationService'
 import { distributeQuery, DocumentInfo } from './distributeQuery'
 import { getWithPath } from './getWithPath'
+import { isSubscription as isSubscriptionType } from './isSubscription'
 import { observablePromise } from './observablePromise'
 import { sanitizeResults } from './sanitizeResult'
 
@@ -247,8 +248,7 @@ export class ResolutionStrategy {
   }
 
   public execute(operation: Operation): Observable<FetchResult> {
-    const mainDefinition = getMainDefinition(operation.query)
-    const isSubscription = mainDefinition.kind === 'OperationDefinition' && mainDefinition.operation === 'subscription'
+    const isSubscription = isSubscriptionType(operation.query)
 
     return new Observable(observer => {
       let observable: Observable<FetchResult> | null

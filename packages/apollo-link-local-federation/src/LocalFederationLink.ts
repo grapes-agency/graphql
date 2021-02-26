@@ -1,9 +1,10 @@
 import { ApolloLink, Operation, NextLink, Observable, FetchResult } from '@apollo/client/core'
+import { createOperation } from '@apollo/client/link/utils'
 import { LocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
 import { DocumentNode } from 'graphql'
 
 import { IntrospectionService } from './introspection'
-import { LocalFederationService, ResolutionStrategy } from './utils'
+import { LocalFederationService, ResolutionStrategy, mergeObservables, isSubscription } from './utils'
 
 export interface LocalFederationServiceDefinition {
   name: string
@@ -46,8 +47,15 @@ export class LocalFederationLink extends ApolloLink {
       return observable
     }
 
-    operation.query = resolutionStrategy.deltaQuery
-    return observable.concat(forward(operation))
+    const externalObserver = forward(
+      createOperation(operation.getContext(), { ...operation, query: resolutionStrategy.deltaQuery })
+    )
+
+    if (isSubscription(resolutionStrategy.deltaQuery)) {
+      return externalObserver
+    }
+
+    return mergeObservables(observable, externalObserver)
   }
 }
 
