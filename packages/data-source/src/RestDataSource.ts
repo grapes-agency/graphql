@@ -108,10 +108,7 @@ export abstract class RESTDataSource {
       options.headers = new Headers(options.headers || {})
     }
 
-    if (this.willSendRequest) {
-      this.willSendRequest(options as RequestOptions)
-    }
-
+    this.willSendRequest?.(options as RequestOptions)
     const url = this.resolveURL(options)
 
     for (const [name, value] of options.params as URLSearchParams) {
@@ -126,10 +123,9 @@ export abstract class RESTDataSource {
         ((options.body as any).toJSON && typeof (options.body as any).toJSON === 'function'))
     ) {
       options.body = JSON.stringify(options.body)
-    }
-
-    if (!options.headers.has('Content-Type')) {
-      options.headers.set('Content-Type', 'application/json')
+      if (!options.headers.has('Content-Type')) {
+        options.headers.set('Content-Type', 'application/json')
+      }
     }
 
     const request = new Request(String(url), options as RequestInit)
