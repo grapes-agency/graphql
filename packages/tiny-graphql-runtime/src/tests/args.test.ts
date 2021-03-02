@@ -243,7 +243,7 @@ describe('Arguments', () => {
     })
 
     expect(result.data!.update).toBeNull()
-    expect(result.errors![0].message).toEqual('Cannot use UP as enum Side for argument data.address.side')
+    expect(result.errors![0].message).toEqual('Enum "Side" cannot represent value: "UP"')
 
     result = await runtime.execute({
       query: gql`

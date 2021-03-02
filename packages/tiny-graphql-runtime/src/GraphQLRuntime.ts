@@ -241,20 +241,26 @@ export class GraphQLRuntime {
     resolvers,
     schemaDirectives,
   }: Required<Pick<GraphQLRuntimeOptions, 'typeDefs' | 'resolvers' | 'schemaDirectives'>>) {
-    let currentObjectName: string | null = null
+    let objectNameLookupList: Array<string> | null = null
 
     visit(typeDefs, {
       ObjectTypeDefinition: {
         enter: objectTypeDefinition => {
-          currentObjectName = objectTypeDefinition.name.value
+          objectNameLookupList = [
+            objectTypeDefinition.name.value,
+            ...(objectTypeDefinition.interfaces?.map(iface => iface.name.value) || []),
+          ]
         },
       },
       ObjectTypeExtension: {
         enter: objectTypeExtension => {
-          currentObjectName = objectTypeExtension.name.value
+          objectNameLookupList = [
+            objectTypeExtension.name.value,
+            ...(objectTypeExtension.interfaces?.map(iface => iface.name.value) || []),
+          ]
         },
         leave: () => {
-          currentObjectName = null
+          objectNameLookupList = null
         },
       },
       InputValueDefinition: inputValue => {
@@ -280,9 +286,18 @@ export class GraphQLRuntime {
         })
       },
       FieldDefinition: field => {
-        ;(field as FieldDefinitionNodeWithResolver).resolve = currentObjectName
-          ? asResolvers(resolvers[currentObjectName])[field.name.value] ?? this.defaultResolver
-          : this.defaultResolver
+        let resolver = this.defaultResolver
+        if (objectNameLookupList) {
+          for (const objectName of objectNameLookupList) {
+            const fieldResolver = asResolvers(resolvers[objectName])[field.name.value]
+            if (fieldResolver) {
+              resolver = fieldResolver
+              break
+            }
+          }
+        }
+
+        ;(field as FieldDefinitionNodeWithResolver).resolve = resolver
 
         field.directives?.forEach(directive => {
           const directiveName = directive.name.value
