@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.11](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.10...@grapes-agency/data-source@1.0.0-alpha.11) (2021-03-02)
+
+
+### Bug Fixes
+
+* **data-source:** Only imply content-type header on JSON data ([f298a46](https://github.com/grapes-agency/graphql/commit/f298a462d23d9f8439e778e4ec347f954fe0ac00))
+
+
+
+
+
 # [1.0.0-alpha.10](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.9...@grapes-agency/data-source@1.0.0-alpha.10) (2020-11-13)
 
 
