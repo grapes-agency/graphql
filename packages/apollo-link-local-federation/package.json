@@ -27,5 +27,6 @@
   "dependencies": {
     "@grapes-agency/tiny-graphql-runtime": "^1.0.0",
     "lodash": "^4.17.20"
-  }
+  },
+  "gitHead": "e3231f9d67260602ad356d06b45c4846044e7bde"
 }
