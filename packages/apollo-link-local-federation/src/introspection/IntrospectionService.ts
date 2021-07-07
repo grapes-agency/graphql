@@ -57,7 +57,14 @@ export class IntrospectionService extends LocalFederationService {
     }
     return (
       await Promise.all(
-        this.services.map(service => observablePromise(service.execute({ query })).then(result => result?.data || null))
+        this.services.map(service =>
+          observablePromise(service.execute({ query })).then(result => {
+            if (result?.errors?.length) {
+              throw result.errors[0]
+            }
+            return result?.data || null
+          })
+        )
       )
     ).filter(Boolean) as Array<T>
   }
