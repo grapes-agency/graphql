@@ -1,6 +1,6 @@
 {
   "name": "@grapes-agency/apollo-link-local-federation",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Like @apollo/federation... but local",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@apollo/client": "^3.3.21",
-    "@grapes-agency/apollo-link-local-schema": "^1.0.1",
+    "@grapes-agency/apollo-link-local-schema": "^1.0.2",
     "@types/lodash": "^4.14.171"
   },
   "dependencies": {

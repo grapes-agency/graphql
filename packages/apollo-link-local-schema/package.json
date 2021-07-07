@@ -1,6 +1,6 @@
 {
   "name": "@grapes-agency/apollo-link-local-schema",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Lightweight local schema resolver for @apollo/client",
   "main": "index.js",
   "scripts": {

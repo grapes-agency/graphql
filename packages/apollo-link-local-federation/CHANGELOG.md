@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.2](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.1...@grapes-agency/apollo-link-local-federation@1.0.2) (2021-07-07)
+
+
+### Bug Fixes
+
+* **apollo-link-local-federation:** Don't add name field to __schema ([b4f6d43](https://github.com/grapes-agency/graphql/commit/b4f6d430bf8a21897b3276b805c71d42d3ac0e45))
+* **apollo-link-local-federation:** Don't assume full introspection query when merging ([d537d8f](https://github.com/grapes-agency/graphql/commit/d537d8f5b0c620b456818f4bd54d228ceaea8faf))
+* **apollo-link-local-federation:** Don't swallow introspection errors ([2d0a27a](https://github.com/grapes-agency/graphql/commit/2d0a27aa120c83070eff25417972dae0439a3ad6))
+
+
+
+
+
 ## [1.0.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.0.0...@grapes-agency/apollo-link-local-federation@1.0.1) (2021-05-25)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-federation
