@@ -2,15 +2,17 @@ import { SelectionSetNode, FieldNode, visit } from 'graphql'
 
 export const ensureNames = (baseField: FieldNode): FieldNode => {
   let hasName = false
+  let inSchema = false
   return visit(baseField, {
     SelectionSet: {
       enter() {
         hasName = false
       },
       leave(selectionSet) {
-        if (hasName) {
+        if (hasName || inSchema) {
           return
         }
+
         const extendedSelectionSet: SelectionSetNode = {
           ...selectionSet,
           selections: [
@@ -25,10 +27,21 @@ export const ensureNames = (baseField: FieldNode): FieldNode => {
         return extendedSelectionSet
       },
     },
-    Field(field) {
-      if (field.name.value === 'name') {
-        hasName = true
-      }
+    Field: {
+      enter({ name: { value } }) {
+        if (value === '__schema') {
+          inSchema = true
+        }
+
+        if (value === 'name') {
+          hasName = true
+        }
+      },
+      leave({ name: { value } }) {
+        if (value === '__schema') {
+          inSchema = false
+        }
+      },
     },
   })
 }
