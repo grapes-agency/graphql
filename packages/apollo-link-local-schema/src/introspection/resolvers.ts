@@ -160,7 +160,7 @@ export const createIntrospectionResolvers = (typeDefs: DocumentNode, { federated
           return null
         }
 
-        return node.interfaces
+        return node.interfaces?.map(iface => typesMap.get(iface.name.value))
       },
       possibleTypes: (node: ASTNode) => {
         if (!isUnionTypeDefinition(node)) {
