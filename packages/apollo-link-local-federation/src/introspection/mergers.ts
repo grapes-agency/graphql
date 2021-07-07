@@ -25,16 +25,19 @@ const mergeDescriptions = (typeA: { description?: string | null }, typeB: { desc
   return `${typeA.description}\n${typeB.description}`
 }
 
-const mergeDirectives = (directiveA: IntrospectionDirective, directiveB: IntrospectionDirective): IntrospectionDirective => {
-  const argsByName = new Map(directiveA.args.map(arg => [arg.name, arg]))
-  const locations = new Set([...directiveA.locations, ...directiveB.locations])
+const mergeDirectives = (
+  directiveA: Partial<IntrospectionDirective>,
+  directiveB: Partial<IntrospectionDirective>
+): IntrospectionDirective => {
+  const argsByName = new Map(directiveA.args?.map(arg => [arg.name, arg]) || [])
+  const locations = new Set([...(directiveA.locations || []), ...(directiveB.locations || [])])
 
-  directiveB.args.forEach(arg => {
+  directiveB.args?.forEach(arg => {
     argsByName.set(arg.name, arg)
   })
 
   return {
-    name: directiveA.name,
+    name: directiveA.name || '',
     description: mergeDescriptions(directiveA, directiveB),
     isRepeatable: directiveA.isRepeatable || directiveB.isRepeatable,
     args: Array.from(argsByName.values()),
@@ -69,16 +72,16 @@ const mergeEnumTypes = (
 }
 
 const mergeInputObjects = (
-  typeA: IntrospectionInputObjectType,
-  typeB: IntrospectionInputObjectType
+  typeA: Partial<IntrospectionInputObjectType>,
+  typeB: Partial<IntrospectionInputObjectType>
 ): IntrospectionInputObjectType => {
-  const inputFieldsByName = new Map(typeA.inputFields.map(inputField => [inputField.name, inputField]))
+  const inputFieldsByName = new Map(typeA.inputFields?.map(inputField => [inputField.name, inputField]) || [])
 
-  typeB.inputFields.forEach(inputField => inputFieldsByName.set(inputField.name, inputField))
+  typeB.inputFields?.forEach(inputField => inputFieldsByName.set(inputField.name, inputField))
 
   return {
     kind: 'INPUT_OBJECT',
-    name: typeA.name,
+    name: typeA.name || '',
     description: mergeDescriptions(typeA, typeB),
     inputFields: Array.from(inputFieldsByName.values()),
   }
