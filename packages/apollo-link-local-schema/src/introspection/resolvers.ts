@@ -1,5 +1,5 @@
-import type { Resolvers } from '@grapes-agency/tiny-graphql-runtime'
 import {
+  Resolvers,
   isObjectTypeDefinition,
   isSchemaDefinition,
   isObjectTypeExtension,
@@ -10,7 +10,7 @@ import {
   isInputObjectTypeDefinition,
   isNonNullType,
   isListType,
-} from '@grapes-agency/tiny-graphql-runtime/helpers'
+} from '@grapes-agency/tiny-graphql-runtime'
 import {
   DocumentNode,
   ASTNode,

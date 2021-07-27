@@ -4,7 +4,7 @@ import {
   isObjectTypeDefinition,
   isInterfaceTypeDefinition,
   unwrapType,
-} from '@grapes-agency/tiny-graphql-runtime/helpers'
+} from '@grapes-agency/tiny-graphql-runtime'
 import {
   DocumentNode,
   DefinitionNode,

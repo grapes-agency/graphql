@@ -1,5 +1,5 @@
 import type { Resolver } from '@grapes-agency/tiny-graphql-runtime'
-import { isObjectTypeDefinition, isObjectTypeExtension } from '@grapes-agency/tiny-graphql-runtime/helpers'
+import { isObjectTypeDefinition, isObjectTypeExtension } from '@grapes-agency/tiny-graphql-runtime'
 import { DocumentNode, GraphQLError, ObjectTypeDefinitionNode, ObjectTypeExtensionNode } from 'graphql'
 import merge from 'lodash/merge'
 

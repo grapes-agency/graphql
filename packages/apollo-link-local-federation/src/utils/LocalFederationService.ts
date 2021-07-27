@@ -1,6 +1,6 @@
 import type { Operation, FetchResult, Observable } from '@apollo/client/core'
 import type { LocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
-import { unwrapType } from '@grapes-agency/tiny-graphql-runtime/helpers'
+import { unwrapType } from '@grapes-agency/tiny-graphql-runtime'
 import type { DocumentNode, TypeNode } from 'graphql'
 
 interface LocalFederationServiceOptions {

@@ -1,4 +1,4 @@
-import { isOperationDefinition, isFragmentDefinition } from '@grapes-agency/tiny-graphql-runtime/helpers'
+import { isOperationDefinition, isFragmentDefinition } from '@grapes-agency/tiny-graphql-runtime'
 import type { DocumentNode, SelectionSetNode } from 'graphql'
 import merge from 'lodash/merge'
 

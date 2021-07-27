@@ -19,7 +19,7 @@
     "@types/lodash": "^4.14.171"
   },
   "dependencies": {
-    "@grapes-agency/tiny-graphql-runtime": "^1.0.1",
+    "@grapes-agency/tiny-graphql-runtime": "file:../tiny-graphql-runtime/dist",
     "lodash": "^4.17.21"
   },
   "publishConfig": {

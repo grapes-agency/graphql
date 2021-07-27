@@ -21,11 +21,11 @@
   },
   "devDependencies": {
     "@apollo/client": "^3.3.21",
-    "@grapes-agency/apollo-link-local-schema": "^1.0.2",
+    "@grapes-agency/apollo-link-local-schema": "file:../apollo-link-local-schema/dist",
     "@types/lodash": "^4.14.171"
   },
   "dependencies": {
-    "@grapes-agency/tiny-graphql-runtime": "^1.0.1",
+    "@grapes-agency/tiny-graphql-runtime": "file:../tiny-graphql-runtime/dist",
     "lodash": "^4.17.21"
   },
   "gitHead": "e3231f9d67260602ad356d06b45c4846044e7bde"

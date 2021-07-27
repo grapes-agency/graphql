@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { FetchResult, Operation } from '@apollo/client/core'
 import { getMainDefinition, Observable } from '@apollo/client/utilities'
-import { isNonNullType, isListType } from '@grapes-agency/tiny-graphql-runtime/helpers'
+import { isNonNullType, isListType } from '@grapes-agency/tiny-graphql-runtime'
 import { DocumentNode, FieldNode, SelectionNode, visit, GraphQLError, NamedTypeNode } from 'graphql'
 import getByPath from 'lodash/get'
 import mergeWith from 'lodash/mergeWith'
