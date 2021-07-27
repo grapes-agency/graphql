@@ -16,17 +16,12 @@
   },
   "peerDependencies": {
     "@apollo/client": "^3.2.5",
-    "@grapes-agency/apollo-link-local-schema": "^1.0.0-alpha.19",
+    "@grapes-agency/apollo-link-local-schema": "^1.0.2",
     "graphql": "^15.4.0"
   },
-  "devDependencies": {
-    "@apollo/client": "^3.3.21",
-    "@grapes-agency/apollo-link-local-schema": "file:../apollo-link-local-schema/dist",
-    "@types/lodash": "^4.14.171"
-  },
   "dependencies": {
-    "@grapes-agency/tiny-graphql-runtime": "file:../tiny-graphql-runtime/dist",
+    "@grapes-agency/tiny-graphql-runtime": "^1.0.1",
     "lodash": "^4.17.21"
   },
-  "gitHead": "e3231f9d67260602ad356d06b45c4846044e7bde"
+  "gitHead": "1eb1faee414c57c927a1098711c08eff3954f5a4"
 }

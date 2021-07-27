@@ -6,27 +6,17 @@
     "test": "jest --verbose",
     "release": "lerna version --conventional-commits -m \"chore(release): publish :tada:\"",
     "lint": "eslint --max-warnings 0 --ext ts,tsx --cache packages",
-    "build": "lerna run build --scope @grapes-agency/tiny-graphql-runtime && lerna run build --scope @grapes-agency/apollo-link-local-schema && lerna run build --scope @grapes-agency/apollo-link-local-federation",
-    "publish": "npm run build && lerna publish from-package"
+    "publish": "lerna run build && lerna publish from-package"
   },
   "author": "",
   "license": "ISC",
+  "private": true,
   "dependencies": {
-    "@grapes-agency/eslint-config": "^1.5.7",
-    "typescript": "^4.3.5",
-    "@babel/core": "^7.14.6",
-    "@babel/preset-env": "^7.14.7",
-    "@babel/preset-typescript": "^7.14.5",
-    "@jagi/jest-transform-graphql": "^1.0.2",
-    "@types/jest": "^26.0.24",
-    "graphql": "^15.5.1",
-    "jest": "^27.0.6",
-    "lerna": "^4.0.0",
-    "rollup": "^2.52.8",
-    "rollup-plugin-clear": "^2.0.7",
-    "rollup-plugin-copy-glob": "^0.3.1",
-    "rollup-plugin-graphql-tag": "^0.1.0",
-    "rollup-plugin-typescript2": "^0.30.0"
+    "@grapes-agency/apollo-link-local-federation": "file:packages/apollo-link-local-federation",
+    "@grapes-agency/apollo-link-local-schema": "file:packages/apollo-link-local-schema",
+    "@grapes-agency/apollo-link-webworker": "file:packages/apollo-link-webworker",
+    "@grapes-agency/data-source": "file:packages/data-source",
+    "@grapes-agency/tiny-graphql-runtime": "file:packages/tiny-graphql-runtime"
   },
   "prettier": "@grapes-agency/eslint-config/prettier",
   "eslintConfig": {
@@ -66,5 +56,14 @@
     "testMatch": [
       "<rootDir>/packages/*/src/**/*.test.ts"
     ]
+  },
+  "devDependencies": {
+    "@apollo/client": "^3.3.21",
+    "@grapes-agency/apollo-link-local-schema": "file:../apollo-link-local-schema/dist",
+    "@types/lodash": "^4.14.171",
+    "@types/zen-observable": "^0.8.1",
+    "graphql": "^15.4.0",
+    "graphql-scalars": "^1.4.1",
+    "graphql-tag": "^2.11.0"
   }
 }
