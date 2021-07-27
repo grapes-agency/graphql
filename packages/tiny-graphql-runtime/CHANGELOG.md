@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.2](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.1...@grapes-agency/tiny-graphql-runtime@1.0.2) (2021-07-27)
+
+
+### Bug Fixes
+
+* removed sub path imports to be cjs compliant ([cfb6f84](https://github.com/grapes-agency/graphql/commit/cfb6f8493cd84631fe9467859f9ca1654a8128a0))
+
+
+
+
+
 ## [1.0.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.0...@grapes-agency/tiny-graphql-runtime@1.0.1) (2021-05-25)
 
 **Note:** Version bump only for package @grapes-agency/tiny-graphql-runtime
