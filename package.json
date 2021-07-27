@@ -6,7 +6,8 @@
     "test": "jest --verbose",
     "release": "lerna version --conventional-commits -m \"chore(release): publish :tada:\"",
     "lint": "eslint --max-warnings 0 --ext ts,tsx --cache packages",
-    "publish": "lerna run build && lerna publish from-package"
+    "build": "lerna run build --scope @grapes-agency/tiny-graphql-runtime && lerna run build --scope @grapes-agency/apollo-link-local-schema && lerna run build --scope @grapes-agency/apollo-link-local-federation",
+    "publish": "npm run build && lerna publish from-package"
   },
   "author": "",
   "license": "ISC",
