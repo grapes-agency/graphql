@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.1.0...@grapes-agency/tiny-graphql-runtime@1.1.1) (2021-08-10)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** Add missing types for zen-observable ([bb573af](https://github.com/grapes-agency/graphql/commit/bb573afa338c95b0bc3909a94766411c8a0297dd))
+
+
+
+
+
 # [1.1.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.0.3...@grapes-agency/tiny-graphql-runtime@1.1.0) (2021-08-10)
 
 
