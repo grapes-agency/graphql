@@ -1,6 +1,6 @@
 {
   "name": "@grapes-agency/apollo-link-local-federation",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Like @apollo/federation... but local",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "graphql": "^15.4.0"
   },
   "dependencies": {
-    "@grapes-agency/tiny-graphql-runtime": "^1.1.1",
+    "@grapes-agency/tiny-graphql-runtime": "^1.1.2",
     "lodash": "^4.17.21"
   },
   "gitHead": "1eb1faee414c57c927a1098711c08eff3954f5a4",
