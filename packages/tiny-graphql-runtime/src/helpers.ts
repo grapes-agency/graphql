@@ -88,7 +88,7 @@ export const getSelectedFieldNames = (
   })
 }
 
-export const selectedFieldsIsLimitedTo = (
+export const selectedFieldsAreLimitedTo = (
   infoOrSelectionSet: SelectionSetNode | GraphQLResolveInfo | ResolveInfo,
   fieldNames: Array<string>
 ) => {
