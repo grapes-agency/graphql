@@ -16,12 +16,15 @@
   },
   "peerDependencies": {
     "@apollo/client": "^3.2.5",
-    "@grapes-agency/apollo-link-local-schema": "^1.0.2",
+    "@grapes-agency/apollo-link-local-schema": "^1.0.4",
     "graphql": "^15.4.0"
   },
   "dependencies": {
     "@grapes-agency/tiny-graphql-runtime": "^1.0.3",
     "lodash": "^4.17.21"
   },
-  "gitHead": "1eb1faee414c57c927a1098711c08eff3954f5a4"
+  "gitHead": "1eb1faee414c57c927a1098711c08eff3954f5a4",
+  "devDependencies": {
+    "@types/lodash": "^4.14.171"
+  }
 }

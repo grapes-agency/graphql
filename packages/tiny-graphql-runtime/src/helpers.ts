@@ -15,9 +15,12 @@ import type {
   ObjectTypeExtensionNode,
   ListTypeNode,
   InputObjectTypeDefinitionNode,
+  SelectionSetNode,
+  SelectionNode,
+  GraphQLResolveInfo,
 } from 'graphql'
 
-import type { Resolver, FieldResolver } from './interfaces'
+import type { Resolver, FieldResolver, ResolveInfo } from './interfaces'
 
 export const isFragmentDefinition = (node: ASTNode): node is FragmentDefinitionNode => node.kind === 'FragmentDefinition'
 export const isDirectiveDefinition = (node: ASTNode): node is DirectiveDefinitionNode => node.kind === 'DirectiveDefinition'
@@ -41,3 +44,55 @@ export const isDeepListType = (node: ASTNode): node is ListTypeNode =>
   isNonNullType(node) ? isDeepListType(node.type) : isListType(node)
 
 export const isFieldResolver = <T>(resolver: Resolver<T>): resolver is FieldResolver<T> => typeof resolver === 'function'
+
+export const isCustomResolveInfo = (info: ResolveInfo | GraphQLResolveInfo): info is ResolveInfo =>
+  Boolean((info as any).selection)
+
+export const isSelectionSet = (selectionSet: any): selectionSet is SelectionSetNode =>
+  'kind' in selectionSet && selectionSet.kind === 'SelectionSet'
+
+export const getSelectedFieldNames = (
+  selectionSetOrResolveInfo: SelectionSetNode | GraphQLResolveInfo | ResolveInfo,
+  fragments: Record<string, FragmentDefinitionNode> = {}
+): Array<string> => {
+  let selections: ReadonlyArray<SelectionNode> = []
+  if (isSelectionSet(selectionSetOrResolveInfo)) {
+    selections = selectionSetOrResolveInfo.selections
+  } else if (isCustomResolveInfo(selectionSetOrResolveInfo)) {
+    if (selectionSetOrResolveInfo.selection.selectionSet) {
+      fragments = selectionSetOrResolveInfo.fragments
+      selections = selectionSetOrResolveInfo.selection.selectionSet.selections
+    }
+  }
+
+  if (selections.length === 0) {
+    return []
+  }
+
+  return selections.flatMap(selection => {
+    switch (selection.kind) {
+      case 'InlineFragment': {
+        return getSelectedFieldNames(selection.selectionSet, fragments)
+      }
+      case 'FragmentSpread': {
+        const fragment = fragments[selection.name.value]
+        if (!fragment) {
+          throw new Error(`Unknown fragment ${selection.name.value}`)
+        }
+        return getSelectedFieldNames(fragment.selectionSet, fragments)
+      }
+      default: {
+        return selection.name.value
+      }
+    }
+  })
+}
+
+export const selectedFieldsIsLimitedTo = (
+  infoOrSelectionSet: SelectionSetNode | GraphQLResolveInfo | ResolveInfo,
+  fieldNames: Array<string>
+) => {
+  const availableFields = [...fieldNames, '__typename']
+  const selectedFields = getSelectedFieldNames(infoOrSelectionSet)
+  return selectedFields.every(field => availableFields.includes(field))
+}
