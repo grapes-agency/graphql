@@ -13,7 +13,7 @@
   "license": "MIT",
   "sideEffects": false,
   "publishConfig": {
-    "directory": "dist"
+    "access": "public"
   },
   "peerDependencies": {
     "@apollo/client": "^3.2.5",
@@ -24,7 +24,6 @@
     "@grapes-agency/tiny-graphql-runtime": "file:../tiny-graphql-runtime",
     "lodash": "^4.17.21"
   },
-  "gitHead": "1eb1faee414c57c927a1098711c08eff3954f5a4",
   "devDependencies": {
     "@types/lodash": "^4.14.171"
   }

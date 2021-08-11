@@ -18,7 +18,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "1eb1faee414c57c927a1098711c08eff3954f5a4",
   "dependencies": {
     "zen-observable": "^0.8.15"
   },

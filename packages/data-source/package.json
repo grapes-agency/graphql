@@ -25,7 +25,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "fb237deb0f8a48b3d9c3cf0a7cac3f9e978f742d",
   "devDependencies": {
     "@types/node-fetch": "^2.5.12",
     "node-fetch": "^2.6.1"
