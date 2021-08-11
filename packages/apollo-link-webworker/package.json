@@ -1,6 +1,6 @@
 {
   "name": "@grapes-agency/apollo-link-webworker",
-  "version": "1.0.0-alpha.3",
+  "version": "1.0.0-alpha.4",
   "description": "WebWorker for @apollo/client",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.js",

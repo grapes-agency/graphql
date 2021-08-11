@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.4](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.3...@grapes-agency/apollo-link-webworker@1.0.0-alpha.4) (2021-08-11)
+
+
+### Features
+
+* **data-source:** NodeJS compatibility ([a388e6c](https://github.com/grapes-agency/graphql/commit/a388e6c802029217e177e4dcb7562807cd63000d))
+
+
+
+
+
 # [1.0.0-alpha.3](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.2...@grapes-agency/apollo-link-webworker@1.0.0-alpha.3) (2021-07-27)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-webworker

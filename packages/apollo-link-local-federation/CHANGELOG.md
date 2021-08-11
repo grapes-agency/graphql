@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.1.2...@grapes-agency/apollo-link-local-federation@1.2.0) (2021-08-11)
+
+
+### Features
+
+* **data-source:** NodeJS compatibility ([a388e6c](https://github.com/grapes-agency/graphql/commit/a388e6c802029217e177e4dcb7562807cd63000d))
+
+
+
+
+
 ## [1.1.2](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.1.1...@grapes-agency/apollo-link-local-federation@1.1.2) (2021-08-10)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-federation

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0...@grapes-agency/data-source@1.1.0) (2021-08-11)
+
+
+### Features
+
+* **data-source:** NodeJS compatibility ([a388e6c](https://github.com/grapes-agency/graphql/commit/a388e6c802029217e177e4dcb7562807cd63000d))
+
+
+
+
+
 # [1.0.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.0.0-alpha.11...@grapes-agency/data-source@1.0.0) (2021-05-25)
 
 **Note:** Version bump only for package @grapes-agency/data-source
