@@ -1,26 +1,24 @@
 import { DataSourceError } from './DataSourceError'
 
-export type Body = ArrayBuffer | ArrayBufferView | string | object
-export type URLSearchParamsInit = URLSearchParams | Record<string, any>
-
-export type RawRequestOptions = Omit<RequestInit, 'body'>
-
-export type RawRequestOptionsWithParams = RawRequestOptions & { params?: URLSearchParamsInit }
-
-export interface BaseRequestOptions extends RawRequestOptions {
-  path: string
-  body?: Body
-  params?: URLSearchParamsInit
-}
-
-export interface RequestOptions extends BaseRequestOptions {
-  params: URLSearchParams
-  headers: Headers
-}
+import type { BaseRequestOptions, RequestOptions, URLSearchParamsInit, RawRequestOptions, RawRequestOptionsWithParams } from './types'
 
 export abstract class RESTDataSource {
   protected memoizedResults = new Map<string, Promise<any>>()
   protected baseUri?: string
+
+  protected fetch!: typeof fetch
+  protected Headers!: typeof Headers
+  protected Request!: typeof Request
+
+  constructor() {
+    this.init()
+  }
+
+  protected init() {
+    this.fetch = fetch
+    this.Headers = Headers
+    this.Request = Request
+  }
 
   protected resolveURL(request: BaseRequestOptions) {
     let { path } = request
@@ -86,7 +84,8 @@ export abstract class RESTDataSource {
     return request.url
   }
 
-  protected fetch<TResult>(options: BaseRequestOptions): Promise<TResult> {
+  protected request<TResult>(options: BaseRequestOptions): Promise<TResult> {
+    const { fetch, Headers, Request } = this
     if (!(options.params instanceof URLSearchParams)) {
       const searchParams = new URLSearchParams()
       if (options.params) {
@@ -155,26 +154,26 @@ export abstract class RESTDataSource {
   }
 
   protected get<TResult = any>(path: string, params?: URLSearchParamsInit, init?: RawRequestOptions) {
-    return this.fetch<TResult>({ method: 'GET', path, params, ...init })
+    return this.request<TResult>({ method: 'GET', path, params, ...init })
   }
 
   protected head(path: string, params?: URLSearchParamsInit, init?: RawRequestOptions) {
-    return this.fetch<Response>({ method: 'HEAD', path, params, ...init })
+    return this.request<Response>({ method: 'HEAD', path, params, ...init })
   }
 
   protected post<TResult = any>(path: string, body?: Body, init?: RawRequestOptionsWithParams) {
-    return this.fetch<TResult>({ method: 'POST', path, body, ...init })
+    return this.request<TResult>({ method: 'POST', path, body, ...init })
   }
 
   protected patch<TResult = any>(path: string, body?: Body, init?: RawRequestOptionsWithParams) {
-    return this.fetch<TResult>({ method: 'PATH', path, body, ...init })
+    return this.request<TResult>({ method: 'PATH', path, body, ...init })
   }
 
   protected put<TResult = any>(path: string, body?: Body, init?: RawRequestOptionsWithParams) {
-    return this.fetch<TResult>({ method: 'PUT', path, body, ...init })
+    return this.request<TResult>({ method: 'PUT', path, body, ...init })
   }
 
   protected delete(path: string, params?: URLSearchParamsInit, init?: RawRequestOptions) {
-    return this.fetch({ method: 'DELETE', path, params, ...init })
+    return this.request({ method: 'DELETE', path, params, ...init })
   }
 }

@@ -2,17 +2,40 @@
   "name": "@grapes-agency/data-source",
   "version": "1.0.0",
   "description": "Simple REST Data Store",
-  "main": "index.js",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "node": {
+      "import": "./dist/server/index.js",
+      "require": "./dist/server/index.cjs.js"
+    },
+    "default": {
+      "import": "./dist/index.js",
+      "default": "./dist/index.cjs.js"
+    }
+  },
   "scripts": {
-    "build": "../../tools/build.sh -c ../../rollup.config.js",
+    "build": "../../tools/build.sh -c",
     "watch": "npm run build -- -w"
   },
   "author": "Torsten Blindert",
   "license": "MIT",
   "sideEffects": false,
   "publishConfig": {
-    "directory": "dist",
     "access": "public"
   },
-  "gitHead": "fb237deb0f8a48b3d9c3cf0a7cac3f9e978f742d"
+  "gitHead": "fb237deb0f8a48b3d9c3cf0a7cac3f9e978f742d",
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.12",
+    "node-fetch": "^2.6.1"
+  },
+  "peerDependencies": {
+    "node-fetch": "^2.6.1"
+  },
+  "peerDependenciesMeta": {
+    "node-fetch": {
+      "optional": true
+    }
+  }
 }

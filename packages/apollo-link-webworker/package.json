@@ -2,7 +2,9 @@
   "name": "@grapes-agency/apollo-link-webworker",
   "version": "1.0.0-alpha.3",
   "description": "WebWorker for @apollo/client",
-  "main": "index.js",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "../../tools/build.sh -c ../../rollup.config.js",
     "watch": "npm run build -- -w"
@@ -18,7 +20,6 @@
     "comlink": "^4.3.1"
   },
   "publishConfig": {
-    "directory": "dist",
     "access": "public"
   }
 }

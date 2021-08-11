@@ -2,7 +2,9 @@
   "name": "@grapes-agency/apollo-link-local-schema",
   "version": "1.1.2",
   "description": "Lightweight local schema resolver for @apollo/client",
-  "main": "index.js",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "../../tools/build.sh -c ../../rollup.config.js",
     "watch": "npm run build -- -w"
@@ -15,11 +17,10 @@
     "graphql": "^15.3.0"
   },
   "dependencies": {
-    "@grapes-agency/tiny-graphql-runtime": "^1.1.2",
+    "@grapes-agency/tiny-graphql-runtime": "file:../tiny-graphql-runtime",
     "lodash": "^4.17.21"
   },
   "publishConfig": {
-    "directory": "dist",
     "access": "public"
   },
   "gitHead": "1eb1faee414c57c927a1098711c08eff3954f5a4",
