@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.2.0...@grapes-agency/tiny-graphql-runtime@1.2.1) (2021-08-11)
+
+**Note:** Version bump only for package @grapes-agency/tiny-graphql-runtime
+
+
+
+
+
 # [1.2.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.1.2...@grapes-agency/tiny-graphql-runtime@1.2.0) (2021-08-11)
 
 
