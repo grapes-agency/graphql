@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.0...@grapes-agency/tiny-graphql-runtime@1.3.1) (2021-08-17)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** Correctly passthrough resolver errors ([bee3e00](https://github.com/grapes-agency/graphql/commit/bee3e004b02f18ddc52167034453fae795b242c5))
+
+
+
+
+
 # [1.3.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.2.1...@grapes-agency/tiny-graphql-runtime@1.3.0) (2021-08-17)
 
 
