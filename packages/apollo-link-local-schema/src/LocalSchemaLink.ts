@@ -7,6 +7,7 @@ import merge from 'lodash/merge'
 import { DocumentsPair } from './interfaces'
 import { introspectionTypeDefs, createIntrospectionResolvers } from './introspection'
 import { LocalFederationSupport } from './localFederation'
+import { default as commonTypeDefs } from './typeDefs.graphql'
 import { mergeDocuments, splitDocument } from './utils'
 
 interface LocalSchemaLinkOptions<Context = any> {
@@ -39,7 +40,7 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
 
     const { typeDefs, resolvers, context, introspection = true, schemaDirectives } = this.options
 
-    let mergedTypeDefs = Array.isArray(typeDefs) ? mergeDocuments(typeDefs) : typeDefs
+    let mergedTypeDefs = mergeDocuments(Array.isArray(typeDefs) ? [commonTypeDefs, ...typeDefs] : [commonTypeDefs, typeDefs])
     const resolversArray = Array.isArray(resolvers) ? resolvers : [resolvers]
 
     if (introspection) {

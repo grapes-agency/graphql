@@ -1,0 +1,4 @@
+  directive @external on FIELD_DEFINITION
+  directive @key(
+    fields: String!
+  ) on OBJECT
