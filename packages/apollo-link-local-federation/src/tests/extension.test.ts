@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client/core'
-import { createLocalSchemaLink, Resolvers } from '@grapes-agency/apollo-link-local-schema'
+import type { Resolvers } from '@grapes-agency/apollo-link-local-schema'
+import { createLocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
 
 import { createLocalFederationLink } from '../LocalFederationLink'
 import { observablePromise } from '../utils/observablePromise'

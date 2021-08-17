@@ -1,4 +1,5 @@
-import { SelectionSetNode, FieldNode, visit } from 'graphql'
+import type { SelectionSetNode, FieldNode } from 'graphql'
+import { visit } from 'graphql'
 
 export const ensureNames = (baseField: FieldNode): FieldNode => {
   let hasName = false

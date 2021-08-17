@@ -1,6 +1,11 @@
 import { DataSourceError } from './DataSourceError'
-
-import type { BaseRequestOptions, RequestOptions, URLSearchParamsInit, RawRequestOptions, RawRequestOptionsWithParams } from './types'
+import type {
+  BaseRequestOptions,
+  RequestOptions,
+  URLSearchParamsInit,
+  RawRequestOptions,
+  RawRequestOptionsWithParams,
+} from './types'
 
 export abstract class RESTDataSource {
   protected memoizedResults = new Map<string, Promise<any>>()

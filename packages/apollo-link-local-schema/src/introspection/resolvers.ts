@@ -1,5 +1,5 @@
+import type { Resolvers } from '@grapes-agency/tiny-graphql-runtime'
 import {
-  Resolvers,
   isObjectTypeDefinition,
   isSchemaDefinition,
   isObjectTypeExtension,
@@ -11,20 +11,19 @@ import {
   isNonNullType,
   isListType,
 } from '@grapes-agency/tiny-graphql-runtime'
-import {
+import type {
   DocumentNode,
   ASTNode,
   DirectiveDefinitionNode,
   ScalarTypeDefinitionNode,
   ObjectTypeExtensionNode,
   TypeDefinitionNode,
-  specifiedScalarTypes,
   FieldDefinitionNode,
   InputValueDefinitionNode,
-  GraphQLError,
   EnumValueDefinitionNode,
   ObjectTypeDefinitionNode,
 } from 'graphql'
+import { specifiedScalarTypes, GraphQLError } from 'graphql'
 
 import { isDeprecated, getDeprecationReason } from './deprecation'
 

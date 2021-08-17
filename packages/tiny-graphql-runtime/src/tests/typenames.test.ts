@@ -1,7 +1,7 @@
 import gql from 'graphql-tag'
 
 import { GraphQLRuntime } from '../GraphQLRuntime'
-import { Resolvers } from '../interfaces'
+import type { Resolvers } from '../interfaces'
 
 describe('typename', () => {
   it('resolves __typename', async () => {

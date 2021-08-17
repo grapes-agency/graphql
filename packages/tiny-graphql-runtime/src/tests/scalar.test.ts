@@ -2,7 +2,7 @@ import { DateTimeResolver } from 'graphql-scalars'
 import gql from 'graphql-tag'
 
 import { GraphQLRuntime } from '../GraphQLRuntime'
-import { Resolvers } from '../interfaces'
+import type { Resolvers } from '../interfaces'
 
 describe('Scalar', () => {
   it('resolves scalars', async () => {

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag'
 
 import { GraphQLRuntime } from '../GraphQLRuntime'
-import { Resolvers } from '../interfaces'
+import type { Resolvers } from '../interfaces'
 
 describe('fragments', () => {
   it('resolves inline fragments', async () => {

@@ -1,4 +1,5 @@
-import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client'
+import type { FetchResult, NextLink, Operation } from '@apollo/client'
+import { ApolloLink, Observable } from '@apollo/client'
 import { proxy, wrap } from 'comlink'
 
 import type { ApolloWorker } from './createApolloWorker'

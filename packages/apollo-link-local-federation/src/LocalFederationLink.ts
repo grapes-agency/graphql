@@ -1,7 +1,8 @@
-import { ApolloLink, Operation, NextLink, Observable, FetchResult } from '@apollo/client/core'
+import type { Operation, NextLink, Observable, FetchResult } from '@apollo/client/core'
+import { ApolloLink } from '@apollo/client/core'
 import { createOperation } from '@apollo/client/link/utils'
-import { LocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
-import { DocumentNode } from 'graphql'
+import type { LocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
+import type { DocumentNode } from 'graphql'
 
 import { IntrospectionService } from './introspection'
 import { LocalFederationService, ResolutionStrategy, mergeObservables, isSubscription } from './utils'

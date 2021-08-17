@@ -1,6 +1,6 @@
 import Observable from 'zen-observable'
 
-import { ResolveInfo, SubscriptionResolver } from './interfaces'
+import type { ResolveInfo, SubscriptionResolver } from './interfaces'
 
 export const asyncIteratorToObservable = (
   resolver: SubscriptionResolver<any>,

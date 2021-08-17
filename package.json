@@ -6,6 +6,7 @@
     "test": "jest --verbose",
     "release": "lerna version --conventional-commits -m \"chore(release): publish :tada:\"",
     "lint": "eslint --max-warnings 0 --ext ts,tsx --cache packages",
+    "check-types": "tsc",
     "publish": "lerna run build && lerna publish from-package"
   },
   "author": "",
@@ -19,6 +20,7 @@
     ],
     "rules": {
       "no-loop-func": "off",
+      "@typescript-eslint/consistent-type-imports": "warn",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/consistent-type-assertions": "off",
@@ -51,6 +53,11 @@
     ]
   },
   "dependencies": {
+    "@babel/preset-env": "^7.15.0",
+    "@babel/preset-typescript": "^7.15.0",
+    "@grapes-agency/eslint-config": "^1.5.7",
+    "@jagi/jest-transform-graphql": "^1.0.2",
+    "@types/jest": "^27.0.1",
     "jest": "^27.0.6",
     "lerna": "^4.0.0",
     "rollup": "^2.56.2",

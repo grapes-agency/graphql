@@ -5,24 +5,22 @@ import {
   isInterfaceTypeDefinition,
   unwrapType,
 } from '@grapes-agency/tiny-graphql-runtime'
-import {
+import type {
   DocumentNode,
   DefinitionNode,
   FragmentDefinitionNode,
-  visit,
   OperationDefinitionNode,
   ObjectTypeExtensionNode,
   ObjectTypeDefinitionNode,
   FieldNode,
   StringValueNode,
-  specifiedScalarTypes,
-  GraphQLError,
   InterfaceTypeDefinitionNode,
   FieldDefinitionNode,
 } from 'graphql'
+import { visit, specifiedScalarTypes, GraphQLError } from 'graphql'
 
 import { ExternalQuery } from './ExternalQuery'
-import { LocalFederationService } from './LocalFederationService'
+import type { LocalFederationService } from './LocalFederationService'
 import { UsedFragmentsSet } from './UsedFragmentsSet'
 import { mergeSelectionSets } from './mergeSelectionSets'
 

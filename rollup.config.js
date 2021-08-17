@@ -13,7 +13,6 @@ const yalcPublisher = () =>
         writeBundle: () => {
           execSync('yalc publish --push', {
             stdio: 'inherit',
-            cwd: 'dist',
           })
         },
       }

@@ -1,4 +1,4 @@
-import {
+import type {
   IntrospectionType,
   IntrospectionEnumType,
   IntrospectionObjectType,

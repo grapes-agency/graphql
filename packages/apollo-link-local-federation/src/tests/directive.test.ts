@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client/core'
 import { createLocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
 import type { Resolvers } from '@grapes-agency/tiny-graphql-runtime'
-import { StringValueNode } from 'graphql'
+import type { StringValueNode } from 'graphql'
 
 import { createLocalFederationLink } from '../LocalFederationLink'
 import { observablePromise } from '../utils'

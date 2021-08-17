@@ -1,4 +1,4 @@
-import { FieldNode, DocumentNode, SelectionSetNode, OperationDefinitionNode, FieldDefinitionNode } from 'graphql'
+import type { FieldNode, DocumentNode, SelectionSetNode, OperationDefinitionNode, FieldDefinitionNode } from 'graphql'
 
 import { mergeSelectionSets } from './mergeSelectionSets'
 import { parseDocument } from './parseDocument'

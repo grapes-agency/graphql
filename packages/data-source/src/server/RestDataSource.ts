@@ -1,5 +1,6 @@
-import { RESTDataSource as ClientRestDataSource} from '../RestDataSource'
 import fetch, { Headers, Request } from 'node-fetch'
+
+import { RESTDataSource as ClientRestDataSource } from '../RestDataSource'
 
 export abstract class RESTDataSource extends ClientRestDataSource {
   protected init() {

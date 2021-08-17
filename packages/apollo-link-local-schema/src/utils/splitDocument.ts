@@ -1,7 +1,8 @@
 /* eslint-disable default-case */
-import { DocumentNode, visit, ObjectTypeDefinitionNode, Visitor, ASTKindToNode, FieldNode } from 'graphql'
+import type { DocumentNode, ObjectTypeDefinitionNode, Visitor, ASTKindToNode, FieldNode } from 'graphql'
+import { visit } from 'graphql'
 
-import { DocumentsPair } from '../interfaces'
+import type { DocumentsPair } from '../interfaces'
 
 const alwaysAllowFields = ['__schema', '__type', '__resolveType', '__typename']
 

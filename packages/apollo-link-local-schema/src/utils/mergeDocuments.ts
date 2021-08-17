@@ -1,12 +1,12 @@
-import {
+import type {
   DocumentNode,
   ObjectTypeExtensionNode,
   ObjectTypeDefinitionNode,
   DefinitionNode,
-  visit,
   FieldDefinitionNode,
   ASTNode,
 } from 'graphql'
+import { visit } from 'graphql'
 
 const isObjectTypeDefinition = (node: ASTNode): node is ObjectTypeDefinitionNode => node.kind === 'ObjectTypeDefinition'
 const isObjectTypeExtension = (node: ASTNode): node is ObjectTypeExtensionNode => node.kind === 'ObjectTypeExtension'

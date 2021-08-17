@@ -1,4 +1,5 @@
-import { FetchResult, Observable } from '@apollo/client/core'
+import type { FetchResult } from '@apollo/client/core'
+import { Observable } from '@apollo/client/core'
 
 export const mergeObservables = (...sources: Array<Observable<FetchResult>>) =>
   new Observable<FetchResult>(observer => {

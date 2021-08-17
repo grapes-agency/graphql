@@ -1,4 +1,4 @@
-import { FieldDefinitionNode, EnumValueDefinitionNode, StringValueNode } from 'graphql'
+import type { FieldDefinitionNode, EnumValueDefinitionNode, StringValueNode } from 'graphql'
 
 const getDeprecateDirective = (node: FieldDefinitionNode | EnumValueDefinitionNode) =>
   node.directives?.find(directive => directive.name.value === 'deprecated')

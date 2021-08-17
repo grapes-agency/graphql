@@ -1,4 +1,5 @@
-import { DocumentNode, FieldNode, GraphQLError } from 'graphql'
+import type { DocumentNode, FieldNode } from 'graphql'
+import { GraphQLError } from 'graphql'
 
 type Writable<T> = { -readonly [P in keyof T]: Writable<T[P]> }
 type WritableFieldNode = Writable<FieldNode>

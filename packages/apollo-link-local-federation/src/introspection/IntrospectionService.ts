@@ -1,6 +1,6 @@
 import { createLocalSchemaLink } from '@grapes-agency/apollo-link-local-schema'
-import { ResolveInfo } from '@grapes-agency/tiny-graphql-runtime'
-import { DocumentNode, IntrospectionQuery, IntrospectionType } from 'graphql'
+import type { ResolveInfo } from '@grapes-agency/tiny-graphql-runtime'
+import type { DocumentNode, IntrospectionQuery, IntrospectionType } from 'graphql'
 
 import { LocalFederationService, observablePromise } from '../utils'
 

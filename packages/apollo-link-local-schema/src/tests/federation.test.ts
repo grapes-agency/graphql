@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client/core'
 
 import { createLocalSchemaLink } from '../LocalSchemaLink'
-import { Resolvers } from '../interfaces'
+import type { Resolvers } from '../interfaces'
 
 import { createOperation } from './createOperation'
 import { observablePromise } from './observablePromise'

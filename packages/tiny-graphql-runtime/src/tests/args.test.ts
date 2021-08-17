@@ -1,7 +1,7 @@
 import gql from 'graphql-tag'
 
 import { GraphQLRuntime } from '../GraphQLRuntime'
-import { Resolvers } from '../interfaces'
+import type { Resolvers } from '../interfaces'
 
 describe('Arguments', () => {
   it('respects arguments', async () => {
@@ -97,7 +97,7 @@ describe('Arguments', () => {
         testArg: 'TEST_ARG',
       },
       query: gql`
-        query($testArg: String) {
+        query ($testArg: String) {
           test(name: $testArg)
         }
       `,
@@ -158,7 +158,7 @@ describe('Arguments', () => {
     const runtime = new GraphQLRuntime({ typeDefs, resolvers })
     const result = await runtime.execute({
       query: gql`
-        query($testArg: String!) {
+        query ($testArg: String!) {
           test(name: $testArg)
         }
       `,
@@ -214,7 +214,7 @@ describe('Arguments', () => {
     const runtime = new GraphQLRuntime({ typeDefs, resolvers })
     let result = await runtime.execute({
       query: gql`
-        mutation($data: Data!) {
+        mutation ($data: Data!) {
           update(data: $data)
         }
       `,
@@ -228,7 +228,7 @@ describe('Arguments', () => {
 
     result = await runtime.execute({
       query: gql`
-        mutation($data: Data!) {
+        mutation ($data: Data!) {
           update(data: $data)
         }
       `,
@@ -247,7 +247,7 @@ describe('Arguments', () => {
 
     result = await runtime.execute({
       query: gql`
-        mutation($data: Data!) {
+        mutation ($data: Data!) {
           update(data: $data)
         }
       `,

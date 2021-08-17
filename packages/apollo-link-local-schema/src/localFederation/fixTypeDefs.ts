@@ -1,4 +1,4 @@
-import { DocumentNode, DefinitionNode } from 'graphql'
+import type { DocumentNode, DefinitionNode } from 'graphql'
 
 export const fixTypeDefs = (typeDefs: DocumentNode): DocumentNode => {
   const definitions: Array<DefinitionNode> = []

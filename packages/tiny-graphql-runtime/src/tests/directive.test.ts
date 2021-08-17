@@ -33,7 +33,7 @@ describe('Directives', () => {
     }
 
     const query = gql`
-      query($shouldSkip: Boolean!) {
+      query ($shouldSkip: Boolean!) {
         test {
           propA
           propB @skip(if: $shouldSkip)

@@ -1,20 +1,17 @@
 /* eslint-disable no-await-in-loop */
-import {
+import type {
   DocumentNode,
   ObjectTypeDefinitionNode,
-  specifiedScalarTypes,
   FieldDefinitionNode,
   ExecutionResult,
-  GraphQLError,
   SelectionSetNode,
   GraphQLScalarType,
   DirectiveDefinitionNode,
   SelectionNode,
   ObjectTypeExtensionNode,
-  isScalarType,
   DirectiveNode,
-  visit,
 } from 'graphql'
+import { specifiedScalarTypes, GraphQLError, isScalarType, visit } from 'graphql'
 import Observable from 'zen-observable'
 
 import { GraphQLCompountError } from './GraphQLCompountError'

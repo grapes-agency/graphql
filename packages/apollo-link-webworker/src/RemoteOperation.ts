@@ -1,4 +1,4 @@
-import { Operation } from '@apollo/client'
+import type { Operation } from '@apollo/client'
 import { createOperation } from '@apollo/client/link/utils'
 import * as Comlink from 'comlink'
 

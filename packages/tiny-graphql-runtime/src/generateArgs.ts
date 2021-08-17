@@ -1,13 +1,13 @@
 /* eslint-disable no-await-in-loop */
-import {
+import type {
   ValueNode,
-  GraphQLError,
   InputValueDefinitionNode,
   ArgumentNode,
   TypeNode,
   GraphQLScalarType,
   InputObjectTypeDefinitionNode,
 } from 'graphql'
+import { GraphQLError } from 'graphql'
 
 import { GraphQLCompountError } from './GraphQLCompountError'
 import type { InputObjectTypeDefinitionNodeWithResolver, InputValueDefinitionNodeWithResolver } from './interfaces'

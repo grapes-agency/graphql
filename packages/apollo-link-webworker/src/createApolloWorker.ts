@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import { ApolloLink, FetchResult, NextLink, Observable, Operation } from '@apollo/client'
+import type { FetchResult, NextLink, Operation } from '@apollo/client'
+import { ApolloLink, Observable } from '@apollo/client'
 import { expose } from 'comlink'
 import './RemoteObservable'
 import './RemoteOperation'
@@ -25,7 +26,7 @@ export const createApolloWorker = (
             //
           }
 
-          ;((forward(operation) as unknown) as Promise<Observable<FetchResult>>).then(observable => {
+          ;(forward(operation) as unknown as Promise<Observable<FetchResult>>).then(observable => {
             const subscription = observable.subscribe(observer)
             unsubscribe = () => subscription.unsubscribe()
           })

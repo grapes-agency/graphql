@@ -2,7 +2,7 @@ import gql from 'graphql-tag'
 import Observable from 'zen-observable'
 
 import { GraphQLRuntime } from '../GraphQLRuntime'
-import { Resolvers } from '../interfaces'
+import type { Resolvers } from '../interfaces'
 
 const fakeAsyncIterator = <T>(callback: (push: (data: T) => void) => void | (() => void)): AsyncIterator<T> => {
   let resolvePromise: (data: T) => void
