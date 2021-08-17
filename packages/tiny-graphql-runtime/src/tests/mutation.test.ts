@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql'
 import gql from 'graphql-tag'
 
 import { GraphQLRuntime } from '../GraphQLRuntime'
@@ -58,5 +59,34 @@ describe('mutations', () => {
       mutationC: 'resultC',
     })
     expect(resolved).toEqual(['A', 'B', 'C'])
+  })
+
+  it('passes through errors', async () => {
+    const typeDefs = gql`
+      type Mutation {
+        execute: String!
+      }
+    `
+
+    const resolvers = {
+      Mutation: {
+        execute: () => {
+          throw new GraphQLError('custom error')
+        },
+      },
+    }
+
+    const runtime = new GraphQLRuntime({ typeDefs, resolvers })
+    const result = await runtime.execute({
+      query: gql`
+        mutation {
+          execute
+        }
+      `,
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.errors!.length).toEqual(1)
+    expect(result.errors![0].message).toEqual('custom error')
   })
 })

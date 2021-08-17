@@ -46,10 +46,6 @@ import type {
   InputObjectTypeDefinitionNodeWithResolver,
 } from './interfaces'
 
-const noop = () => {
-  //
-}
-
 const typenameFieldDefinition: FieldDefinitionNode = {
   kind: 'FieldDefinition',
   name: { kind: 'Name', value: '__typename' },
@@ -532,43 +528,52 @@ export class GraphQLRuntime {
                     mapSubscriptionResult
                   )
                 } else {
-                  promiseRegistry.add(
-                    Promise.resolve()
-                      .then(() => argsPromise)
-                      .then(generatedArgs => resolver(parentData, generatedArgs, context, resolveInfo))
-                      .then(result => {
-                        if (!isSubscriptionResolver(result)) {
-                          data[fieldName] = null
-                          errors.push(
-                            new GraphQLError(
-                              `Subscription field ${field.name.value} has to return an object with subscribe function`
-                            )
-                          )
-                          return
-                        }
-                        data[fieldName] = asyncIteratorToObservable(result, parentData, args, context, resolveInfo).flatMap(
-                          mapSubscriptionResult
-                        )
-                      })
-                      .catch(noop)
-                  )
+                  promiseRegistry.add(async () => {
+                    let generatedArgs: Record<string, any>
+                    try {
+                      generatedArgs = await argsPromise
+                    } catch {
+                      return
+                    }
+
+                    const result = await resolver(parentData, generatedArgs, context, resolveInfo)
+                    if (!isSubscriptionResolver(result)) {
+                      data[fieldName] = null
+                      errors.push(
+                        new GraphQLError(`Subscription field ${field.name.value} has to return an object with subscribe function`)
+                      )
+                      return
+                    }
+                    data[fieldName] = asyncIteratorToObservable(result, parentData, args, context, resolveInfo).flatMap(
+                      mapSubscriptionResult
+                    )
+                  })
                 }
                 break
               }
               let resultPromise: Promise<any>
               if (executeSequentially) {
-                executionChain = executionChain.then(() =>
-                  Promise.resolve()
-                    .then(() => argsPromise)
-                    .then(generatedArgs => (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
-                    .catch(noop)
-                )
+                executionChain = executionChain.then(async () => {
+                  let generatedArgs: Record<string, any>
+                  try {
+                    generatedArgs = await argsPromise
+                  } catch {
+                    return
+                  }
+                  return (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo)
+                })
                 resultPromise = executionChain
               } else {
-                resultPromise = Promise.resolve()
-                  .then(() => argsPromise)
-                  .then(generatedArgs => (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
-                  .catch(noop)
+                resultPromise = Promise.resolve().then(async () => {
+                  let generatedArgs: Record<string, any>
+                  try {
+                    generatedArgs = await argsPromise
+                  } catch {
+                    return
+                  }
+
+                  return (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo)
+                })
               }
 
               promiseRegistry.add(
