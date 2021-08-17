@@ -25,6 +25,7 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
+    "@grapes-agency/apollo-link-local-schema": "file:../apollo-link-local-schema",
     "@types/lodash": "^4.14.171"
   }
 }
