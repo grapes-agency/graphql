@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.2.1...@grapes-agency/apollo-link-local-schema@1.3.0) (2021-08-17)
+
+
+### Features
+
+* **apollo-link-local-schema:** Added typeDefs for federation directives ([3e601ad](https://github.com/grapes-agency/graphql/commit/3e601adbc5e1989d2cbe9f37d9d4a2c1bb2e1c2e))
+
+
+
+
+
 ## [1.2.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.2.0...@grapes-agency/apollo-link-local-schema@1.2.1) (2021-08-11)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-schema

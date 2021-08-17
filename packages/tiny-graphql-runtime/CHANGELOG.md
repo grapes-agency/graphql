@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.2.1...@grapes-agency/tiny-graphql-runtime@1.3.0) (2021-08-17)
+
+
+### Features
+
+* **tiny-graphql-runtime:** Added support for input field / object resolvers ([e2e421c](https://github.com/grapes-agency/graphql/commit/e2e421c8ca927a08b753bd667c69efedd358e7bb))
+
+
+
+
+
 ## [1.2.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.2.0...@grapes-agency/tiny-graphql-runtime@1.2.1) (2021-08-11)
 
 **Note:** Version bump only for package @grapes-agency/tiny-graphql-runtime
