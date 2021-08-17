@@ -30,7 +30,7 @@ const fakeAsyncIterator = <T>(callback: (push: (data: T) => void) => void | (() 
 }
 
 describe('Subscriptions', () => {
-  it('resolve simple subscription', async callback => {
+  it('resolve simple subscription', done => {
     const typeDefs = gql`
       type Test {
         prop: String!
@@ -65,27 +65,29 @@ describe('Subscriptions', () => {
 
     const runtime = new GraphQLRuntime({ typeDefs, resolvers })
 
-    const result = await runtime.execute({ query })
+    ;(async () => {
+      const result = await runtime.execute({ query })
 
-    expect(result!.errors).toBeUndefined()
-    expect(result!.data!.test).toBeInstanceOf(Observable)
+      expect(result!.errors).toBeUndefined()
+      expect(result!.data!.test).toBeInstanceOf(Observable)
 
-    const observable: Observable<any> = result!.data!.test
+      const observable: Observable<any> = result!.data!.test
 
-    observable.subscribe({
-      next: data => {
-        expect(data).toEqual({
-          test: { prop: 'abc.prop' },
-        })
-        callback()
-      },
-      error: error => {
-        throw error
-      },
-    })
+      observable.subscribe({
+        next: data => {
+          expect(data).toEqual({
+            test: { prop: 'abc.prop' },
+          })
+          done()
+        },
+        error: error => {
+          throw error
+        },
+      })
+    })()
   })
 
-  it('resolve nested subscription', async callback => {
+  it('resolve nested subscription', done => {
     const typeDefs = gql`
       type Test {
         prop: Sub
@@ -130,23 +132,25 @@ describe('Subscriptions', () => {
 
     const runtime = new GraphQLRuntime({ typeDefs, resolvers })
 
-    const result = await runtime.execute({ query })
+    ;(async () => {
+      const result = await runtime.execute({ query })
 
-    expect(result!.errors).toBeUndefined()
-    expect(result!.data!.test).toBeInstanceOf(Observable)
+      expect(result!.errors).toBeUndefined()
+      expect(result!.data!.test).toBeInstanceOf(Observable)
 
-    const observable: Observable<any> = result!.data!.test
+      const observable: Observable<any> = result!.data!.test
 
-    observable.subscribe({
-      next: data => {
-        expect(data).toEqual({
-          test: { prop: { propSub: 'abc.prop.sub' } },
-        })
-        callback()
-      },
-      error: error => {
-        throw error
-      },
-    })
+      observable.subscribe({
+        next: data => {
+          expect(data).toEqual({
+            test: { prop: { propSub: 'abc.prop.sub' } },
+          })
+          done()
+        },
+        error: error => {
+          throw error
+        },
+      })
+    })()
   })
 })

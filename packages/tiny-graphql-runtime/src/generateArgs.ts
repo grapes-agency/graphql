@@ -22,9 +22,10 @@ interface GenerateArgsOptions {
   specifiedArgs?: Record<string, any>
   argDefinitions?: ReadonlyArray<InputValueDefinitionNode>
   args?: ReadonlyArray<ArgumentNode>
+  context?: any
 }
 
-export const generateArgs = ({
+export const generateArgs = async ({
   parentName,
   inputMap,
   enumMap,
@@ -32,6 +33,7 @@ export const generateArgs = ({
   specifiedArgs = {},
   argDefinitions = [],
   args = [],
+  context = null,
 }: GenerateArgsOptions) => {
   const errors: Array<GraphQLError> = []
   const getInputMappingError = (message: string, path: Path, originalError?: GraphQLError) =>
@@ -69,7 +71,7 @@ export const generateArgs = ({
     }
   }
 
-  const mapValue = (
+  const mapValue = async (
     value: any,
     path: Path,
     inputValue: InputValueDefinitionNodeWithResolver,
@@ -77,11 +79,12 @@ export const generateArgs = ({
     arg: ArgumentNode | null,
     type: TypeNode,
     resolve: boolean
-  ): any => {
+  ): Promise<any> => {
     value = value === undefined ? null : value
+
     if (resolve && inputValue.resolve) {
       try {
-        value = inputValue.resolve(value, { field: inputValue, parentType: inputObjectType, arg })
+        value = await inputValue.resolve(value, context, { field: inputValue, parentType: inputObjectType, arg })
       } catch (error) {
         if (error instanceof GraphQLCompountError) {
           errors.push(...error.errors.map(e => getInputMappingError(e.message, path, e)))
@@ -111,7 +114,9 @@ export const generateArgs = ({
         return null
       }
 
-      return value.map((v, index) => mapValue(v, [...path, index], inputValue, inputObjectType, arg, type.type, true))
+      return Promise.all(
+        value.map((v, index) => mapValue(v, [...path, index], inputValue, inputObjectType, arg, type.type, true))
+      )
     }
 
     const typeName = type.name.value
@@ -153,7 +158,7 @@ export const generateArgs = ({
       for (const field of inputType.fields) {
         const fieldName = field.name.value
 
-        combinedFields[fieldName] = mapValue(
+        combinedFields[fieldName] = await mapValue(
           value[fieldName] ?? null,
           [...path, fieldName],
           field,
@@ -164,6 +169,18 @@ export const generateArgs = ({
         )
       }
 
+      if (inputType.resolve) {
+        try {
+          return inputType.resolve(combinedFields, context, { type: inputType, arg })
+        } catch (error) {
+          if (error instanceof GraphQLCompountError) {
+            errors.push(...error.errors.map(e => getInputMappingError(e.message, path, e)))
+          } else {
+            errors.push(getInputMappingError(error.message, path, error))
+          }
+          return null
+        }
+      }
       return combinedFields
     }
 
@@ -183,7 +200,7 @@ export const generateArgs = ({
       ? getValue(inputValue.defaultValue)
       : null
 
-    const mappedValue = mapValue(
+    const mappedValue = await mapValue(
       value,
       [name],
       inputValue as InputValueDefinitionNodeWithResolver,

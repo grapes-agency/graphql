@@ -12,6 +12,7 @@ import {
   SelectionNode,
   ObjectTypeExtensionNode,
   isScalarType,
+  DirectiveNode,
   visit,
 } from 'graphql'
 import Observable from 'zen-observable'
@@ -47,6 +48,10 @@ import type {
   FieldDefinitionNodeWithResolver,
   InputObjectTypeDefinitionNodeWithResolver,
 } from './interfaces'
+
+const noop = () => {
+  //
+}
 
 const typenameFieldDefinition: FieldDefinitionNode = {
   kind: 'FieldDefinition',
@@ -118,6 +123,7 @@ export class GraphQLRuntime {
   private enumMap: Map<string, Array<string>>
   private directiveMap: Map<string, DirectiveDefinitionNode>
   private defaultResolver: Resolver
+  private resolversReady: Promise<void>
 
   public queryType: ObjectTypeDefinitionNode | null
   public mutationType: ObjectTypeDefinitionNode | null
@@ -181,10 +187,9 @@ export class GraphQLRuntime {
     )
 
     this.directiveMap = new Map(
-      [
-        ...(typeDefs.definitions.filter(isDirectiveDefinition) as Array<DirectiveDefinitionNode>),
-        ...defaultDirectives,
-      ].map(definition => [definition.name.value, definition])
+      [...(typeDefs.definitions.filter(isDirectiveDefinition) as Array<DirectiveDefinitionNode>), ...defaultDirectives].map(
+        definition => [definition.name.value, definition]
+      )
     )
 
     this.scalarMap = new Map([
@@ -193,7 +198,7 @@ export class GraphQLRuntime {
         .filter(isScalarTypeDefinition)
         .map<[string, GraphQLScalarType | null]>(scalarDefinition => [
           scalarDefinition.name.value,
-          ((resolvers[scalarDefinition.name.value] as unknown) as GraphQLScalarType) || null,
+          (resolvers[scalarDefinition.name.value] as unknown as GraphQLScalarType) || null,
         ]),
     ])
     const schemaDefinition = typeDefs.definitions.find(isSchemaDefinition)
@@ -233,15 +238,43 @@ export class GraphQLRuntime {
     const possibleSubscriptionType = this.objectMap.get(subscriptionTypeName)
     this.subscriptionType = toObjectTypeDefinition(possibleSubscriptionType)
 
-    this.mapResolversToFields({ typeDefs, resolvers, schemaDirectives })
+    this.resolversReady = this.mapResolversToFields({ typeDefs, resolvers, schemaDirectives })
   }
 
-  protected mapResolversToFields({
+  protected async mapResolversToFields({
     typeDefs,
     resolvers,
     schemaDirectives,
   }: Required<Pick<GraphQLRuntimeOptions, 'typeDefs' | 'resolvers' | 'schemaDirectives'>>) {
     let objectNameLookupList: Array<string> | null = null
+    const promiseRegistry = new PromiseRegistry()
+    const mapDirectiveDefinitions = (
+      target: { directives?: ReadonlyArray<DirectiveNode> },
+      mapper: (visitor: SchemaDirectiveVisitor, args: Record<string, any>) => void
+    ) => {
+      target.directives?.forEach(async directive => {
+        const name = directive.name.value
+        const definition = this.directiveMap.get(name)
+        if (definition) {
+          const visitor = schemaDirectives[name]
+          if (visitor) {
+            const args = await promiseRegistry.add(
+              generateArgs({
+                parentName: `@${name}`,
+                inputMap: this.inputMap,
+                enumMap: this.enumMap,
+                scalarMap: this.scalarMap,
+                argDefinitions: definition.arguments,
+                args: directive.arguments,
+              })
+            )
+            mapper(visitor, args)
+          }
+        } else {
+          throw new GraphQLError(`Cannot use schemaDirective for unknown directive @${name}`)
+        }
+      })
+    }
 
     visit(typeDefs, {
       ObjectTypeDefinition: {
@@ -263,26 +296,29 @@ export class GraphQLRuntime {
           objectNameLookupList = null
         },
       },
+      InputObjectTypeDefinition: {
+        enter: inputObjectType => {
+          objectNameLookupList = [inputObjectType.name.value]
+          mapDirectiveDefinitions(inputObjectType, (visitor, args) => {
+            visitor.visitInputObjectDefinition?.(inputObjectType as InputObjectTypeDefinitionNodeWithResolver, args)
+          })
+        },
+        leave: () => {
+          objectNameLookupList = null
+        },
+      },
       InputValueDefinition: inputValue => {
-        inputValue.directives?.forEach(directive => {
-          const directiveName = directive.name.value
-
-          const directiveDefinition = this.directiveMap.get(directiveName)
-          if (directiveDefinition) {
-            schemaDirectives[directiveName]?.visitInputValueDefinition?.(
-              inputValue,
-              generateArgs({
-                parentName: `@${directiveName}`,
-                inputMap: this.inputMap,
-                enumMap: this.enumMap,
-                scalarMap: this.scalarMap,
-                argDefinitions: directiveDefinition.arguments,
-                args: directive.arguments,
-              })
-            )
-          } else {
-            throw new GraphQLError(`Cannot use schemaDirective for unknown directive @${directiveName}`)
+        if (objectNameLookupList) {
+          for (const objectName of objectNameLookupList) {
+            const resolver = asResolvers(resolvers[objectName])[inputValue.name.value]
+            if (resolver) {
+              ;(inputValue as any).resolve = resolver
+              break
+            }
           }
+        }
+        mapDirectiveDefinitions(inputValue, (visitor, args) => {
+          visitor.visitInputValueDefinition?.(inputValue, args)
         })
       },
       FieldDefinition: field => {
@@ -299,61 +335,54 @@ export class GraphQLRuntime {
 
         ;(field as FieldDefinitionNodeWithResolver).resolve = resolver
 
-        field.directives?.forEach(directive => {
-          const directiveName = directive.name.value
-          const directiveDefinition = this.directiveMap.get(directiveName)
-          if (directiveDefinition) {
-            schemaDirectives[directiveName]?.visitFieldDefinition?.(
-              field as FieldDefinitionNodeWithResolver,
-              generateArgs({
-                parentName: `@${directiveName}`,
-                inputMap: this.inputMap,
-                enumMap: this.enumMap,
-                scalarMap: this.scalarMap,
-                argDefinitions: directiveDefinition.arguments,
-                args: directive.arguments,
-              })
-            )
-          }
+        mapDirectiveDefinitions(field, (visitor, args) => {
+          visitor.visitFieldDefinition?.(field as FieldDefinitionNodeWithResolver, args)
         })
       },
     })
+
+    return promiseRegistry.all()
   }
 
-  protected processDirectives(selection: SelectionNode, args: Record<string, any>) {
-    return (selection.directives || []).reduce<Record<string, any>>((combinedDirectives, directive) => {
+  protected async processDirectives(selection: SelectionNode, args: Record<string, any>) {
+    const combinedDirectives: Record<string, any> = {}
+
+    if (!selection.directives) {
+      return combinedDirectives
+    }
+
+    for (const directive of selection.directives) {
       const schemaDirective = this.directiveMap.get(directive.name.value)
       if (!schemaDirective) {
-        return combinedDirectives
+        continue
       }
 
       const locations = schemaDirective.locations.map(loc => loc.value)
       if (selection.kind === 'Field' && !locations.includes('FIELD')) {
-        return combinedDirectives
+        continue
       }
 
       if (selection.kind === 'FragmentSpread' && !locations.includes('FRAGMENT_SPREAD')) {
-        return combinedDirectives
+        continue
       }
 
       if (selection.kind === 'InlineFragment' && !locations.includes('INLINE_FRAGMENT')) {
-        return combinedDirectives
+        continue
       }
 
       const directiveName = directive.name.value
-      return {
-        ...combinedDirectives,
-        [directiveName]: generateArgs({
-          parentName: `@${directiveName}`,
-          inputMap: this.inputMap,
-          enumMap: this.enumMap,
-          scalarMap: this.scalarMap,
-          specifiedArgs: args,
-          argDefinitions: schemaDirective.arguments,
-          args: directive.arguments,
-        }),
-      }
-    }, {})
+      combinedDirectives[directiveName] = await generateArgs({
+        parentName: `@${directiveName}`,
+        inputMap: this.inputMap,
+        enumMap: this.enumMap,
+        scalarMap: this.scalarMap,
+        specifiedArgs: args,
+        argDefinitions: schemaDirective.arguments,
+        args: directive.arguments,
+      })
+    }
+
+    return combinedDirectives
   }
 
   protected compose(data: Record<string, any>): Record<string, any> {
@@ -376,6 +405,7 @@ export class GraphQLRuntime {
   }
 
   public async execute({ rootData = null, query, context, args = {} }: ExecutionOptions): Promise<ExecutionResult> {
+    await this.resolversReady
     const mainOperation = query.definitions.find(isOperationDefinition)
     if (!mainOperation) {
       return { errors: [new GraphQLError('Operation definition missing')] }
@@ -422,44 +452,44 @@ export class GraphQLRuntime {
     ) => {
       const data: Record<string, any> = {}
       let executionChain: Promise<any> = Promise.resolve()
-      for (const selection of selectionSet.selections) {
-        const directives = this.processDirectives(selection, args)
 
-        const skip = directives.skip?.if === true || directives.include?.if === false
+      ;(async () => {
+        for (const selection of selectionSet.selections) {
+          const directives = await promiseRegistry.add(this.processDirectives(selection, args))
 
-        switch (selection.kind) {
-          case 'Field': {
-            const field =
-              selection.name.value === '__typename'
-                ? typenameFieldDefinition
-                : type.fields?.find(f => f.name.value === selection.name.value)
-            const fieldName = selection.alias?.value || selection.name.value
+          const skip = directives.skip?.if === true || directives.include?.if === false
 
-            if (!field) {
-              data[fieldName] = null
-              errors.push(new GraphQLError(`Cannot query field ${selection.name.value} on type ${type.name.value}`))
-              break
-            }
+          switch (selection.kind) {
+            case 'Field': {
+              const field =
+                selection.name.value === '__typename'
+                  ? typenameFieldDefinition
+                  : type.fields?.find(f => f.name.value === selection.name.value)
+              const fieldName = selection.alias?.value || selection.name.value
 
-            const fieldType = unwrapType(field.type).name.value
+              if (!field) {
+                data[fieldName] = null
+                errors.push(new GraphQLError(`Cannot query field ${selection.name.value} on type ${type.name.value}`))
+                break
+              }
 
-            const resolveInfo: ResolveInfo = {
-              field,
-              parentType: type,
-              fragments,
-              selection,
-            }
+              const fieldType = unwrapType(field.type).name.value
 
-            const resolver =
-              field === typenameFieldDefinition
-                ? () => type.name.value
-                : type.name.value === '__SUBSCRIPTON__'
-                ? this.defaultResolver
-                : (field as FieldDefinitionNodeWithResolver).resolve
+              const resolveInfo: ResolveInfo = {
+                field,
+                parentType: type,
+                fragments,
+                selection,
+              }
 
-            let generatedArgs = {}
-            try {
-              generatedArgs = generateArgs({
+              const resolver =
+                field === typenameFieldDefinition
+                  ? () => type.name.value
+                  : type.name.value === '__SUBSCRIPTON__'
+                  ? this.defaultResolver
+                  : (field as FieldDefinitionNodeWithResolver).resolve
+
+              const argsPromise = generateArgs({
                 parentName: fieldName,
                 inputMap: this.inputMap,
                 enumMap: this.enumMap,
@@ -467,235 +497,244 @@ export class GraphQLRuntime {
                 specifiedArgs: args,
                 argDefinitions: field.arguments,
                 args: selection.arguments,
+                context,
+              }).catch(error => {
+                data[fieldName] = null
+
+                if (error instanceof GraphQLCompountError) {
+                  errors.push(...error.errors)
+                } else {
+                  errors.push(error)
+                }
+
+                throw error
               })
-            } catch (error) {
-              data[fieldName] = null
 
-              if (error instanceof GraphQLCompountError) {
-                errors.push(...error.errors)
-              } else {
-                errors.push(error)
+              if (skip) {
+                break
               }
-              break
-            }
 
-            if (skip) {
-              break
-            }
+              if (expectSubscription) {
+                expectSubscription = false
 
-            if (expectSubscription) {
-              expectSubscription = false
+                const mapSubscriptionResult = (result: any) =>
+                  new Observable(observer => {
+                    const processsedData = processSelectionSet(
+                      selectionSet,
+                      { ...type, name: { kind: 'Name', value: '__SUBSCRIPTON__' } },
+                      result
+                    )
 
-              const mapSubscriptionResult = (result: any) =>
-                new Observable(observer => {
-                  const processsedData = processSelectionSet(
-                    selectionSet,
-                    { ...type, name: { kind: 'Name', value: '__SUBSCRIPTON__' } },
-                    result
-                  )
-
-                  promiseRegistry.all().then(() => {
-                    observer.next(this.compose(processsedData))
-                  })
-                })
-
-              if (isSubscriptionResolver(resolver)) {
-                data[fieldName] = asyncIteratorToObservable(resolver, parentData, args, context, resolveInfo).flatMap(
-                  mapSubscriptionResult
-                )
-              } else {
-                promiseRegistry.add(
-                  Promise.resolve()
-                    .then(() => resolver(parentData, generatedArgs, context, resolveInfo))
-                    .then(result => {
-                      if (!isSubscriptionResolver(result)) {
-                        data[fieldName] = null
-                        errors.push(
-                          new GraphQLError(
-                            `Subscription field ${field.name.value} has to return an object with subscribe function`
-                          )
-                        )
-                        return
-                      }
-                      data[fieldName] = asyncIteratorToObservable(result, parentData, args, context, resolveInfo).flatMap(
-                        mapSubscriptionResult
-                      )
+                    promiseRegistry.all().then(() => {
+                      observer.next(this.compose(processsedData))
                     })
-                )
-              }
-              break
-            }
-            let resultPromise: Promise<any>
-            if (executeSequentially) {
-              executionChain = executionChain.then(() =>
-                Promise.resolve().then(() => (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
-              )
-              resultPromise = executionChain
-            } else {
-              resultPromise = Promise.resolve().then(() =>
-                (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo)
-              )
-            }
+                  })
 
-            promiseRegistry.add(
-              resultPromise
-                .catch(error => {
-                  if (error instanceof GraphQLError) {
-                    errors.push(error)
-                  } else {
-                    errors.push(new GraphQLError(error.message, null, null, null, null, error, error.extensions))
-                  }
-                  return null
-                })
-                .then(result => {
-                  result = result === undefined ? null : result
-
-                  if (field.type.kind === 'NonNullType' && result === null) {
-                    throw new GraphQLError(`Cannot return null for non-nullable field ${type.name.value}.${field.name.value}`)
-                  }
-
-                  const isListSelection = isDeepListType(field.type)
-                  if (isListSelection && !Array.isArray(result)) {
-                    if (isNonNullType(field.type)) {
-                      throw new GraphQLError(`${type.name.value}.${field.name.value} has to return an array`)
-                    }
-                    data[fieldName] = null
-                    return
-                  }
-
-                  if (this.scalarMap.has(fieldType)) {
-                    const scalarType = this.scalarMap.get(fieldType)
-                    if (isListSelection) {
-                      data[fieldName] = result.map((subResult: any) =>
-                        scalarType && subResult !== null ? scalarType.parseValue(subResult) : subResult
-                      )
-                    } else {
-                      data[fieldName] = scalarType && result !== null ? scalarType.parseValue(result) : result
-                    }
-                    return
-                  }
-
-                  if (this.enumMap.has(fieldType)) {
-                    const possibleValues = this.enumMap.get(fieldType)!
-                    for (const r of Array.isArray(result) ? result : [result]) {
-                      if (!possibleValues.includes(r)) {
-                        errors.push(new GraphQLError(`Enum "${fieldType}" cannot represent value: "${r}"`))
-                        return null
-                      }
-                    }
-
-                    data[fieldName] = result
-                    return
-                  }
-
-                  if (this.unionMap.has(fieldType) || this.interfaceMap.has(fieldType)) {
-                    const possibleTypes = this.unionMap.has(fieldType)
-                      ? this.unionMap.get(fieldType)!
-                      : this.interfaceMap.get(fieldType)!
-                    const typeResolver = asResolvers(this.resolvers[fieldType]).__resolveType
-                    if (!typeResolver) {
-                      throw new GraphQLError(`${fieldType}.__resolveType method is missing`)
-                    }
-
-                    const processTypeName = (typeName: string | null, subResult: any) => {
-                      typeName = typeName === undefined ? null : typeName
-                      if (typeName === null) {
-                        return null
-                      }
-
-                      if (!possibleTypes.has(typeName)) {
-                        throw new GraphQLError(`Union ${fieldName} cannot resolve to type ${typeName}`)
-                      }
-
-                      if (this.scalarMap.has(fieldType)) {
-                        const scalarType = this.scalarMap.get(fieldType)
-                        return scalarType && result !== null ? scalarType.parseValue(result) : result
-                      }
-
-                      if (!selection.selectionSet) {
-                        errors.push(new GraphQLError(`Missing sub selection for field ${selection.name.value}`))
-                        return null
-                      }
-
-                      const subType = this.objectMap.get(typeName)!
-                      return processSelectionSet(selection.selectionSet, subType, subResult)
-                    }
-
-                    if (isListSelection) {
-                      data[fieldName] = []
-                      result.forEach((subResult: any) => {
-                        promiseRegistry.add(
-                          Promise.resolve(typeResolver(subResult, context, resolveInfo)).then(typeName =>
-                            data[fieldName].push(processTypeName(typeName, subResult))
+                if (isSubscriptionResolver(resolver)) {
+                  data[fieldName] = asyncIteratorToObservable(resolver, parentData, args, context, resolveInfo).flatMap(
+                    mapSubscriptionResult
+                  )
+                } else {
+                  promiseRegistry.add(
+                    Promise.resolve()
+                      .then(() => argsPromise)
+                      .then(generatedArgs => resolver(parentData, generatedArgs, context, resolveInfo))
+                      .then(result => {
+                        if (!isSubscriptionResolver(result)) {
+                          data[fieldName] = null
+                          errors.push(
+                            new GraphQLError(
+                              `Subscription field ${field.name.value} has to return an object with subscribe function`
+                            )
                           )
+                          return
+                        }
+                        data[fieldName] = asyncIteratorToObservable(result, parentData, args, context, resolveInfo).flatMap(
+                          mapSubscriptionResult
                         )
                       })
+                      .catch(noop)
+                  )
+                }
+                break
+              }
+              let resultPromise: Promise<any>
+              if (executeSequentially) {
+                executionChain = executionChain.then(() =>
+                  Promise.resolve()
+                    .then(() => argsPromise)
+                    .then(generatedArgs => (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
+                    .catch(noop)
+                )
+                resultPromise = executionChain
+              } else {
+                resultPromise = Promise.resolve()
+                  .then(() => argsPromise)
+                  .then(generatedArgs => (resolver as FieldResolver)(parentData, generatedArgs, context, resolveInfo))
+                  .catch(noop)
+              }
+
+              promiseRegistry.add(
+                resultPromise
+                  .catch(error => {
+                    if (error instanceof GraphQLError) {
+                      errors.push(error)
                     } else {
-                      promiseRegistry.add(
-                        Promise.resolve(typeResolver(result, context, resolveInfo)).then(typeName => {
-                          const r = processTypeName(typeName, result)
-                          data[fieldName] = r
-                        })
-                      )
+                      errors.push(new GraphQLError(error.message, null, null, null, null, error, error.extensions))
                     }
-                    return
-                  }
+                    return null
+                  })
+                  .then(result => {
+                    result = result === undefined ? null : result
 
-                  if (this.objectMap.has(fieldType)) {
-                    if (!selection.selectionSet) {
-                      throw new GraphQLError(`Missing sub selection for field ${selection.name.value}`)
+                    if (field.type.kind === 'NonNullType' && result === null) {
+                      throw new GraphQLError(`Cannot return null for non-nullable field ${type.name.value}.${field.name.value}`)
                     }
 
-                    if (result === null) {
+                    const isListSelection = isDeepListType(field.type)
+                    if (isListSelection && !Array.isArray(result)) {
+                      if (isNonNullType(field.type)) {
+                        throw new GraphQLError(`${type.name.value}.${field.name.value} has to return an array`)
+                      }
                       data[fieldName] = null
                       return
                     }
 
-                    const subType = this.objectMap.get(fieldType)!
-                    if (isListSelection) {
-                      data[fieldName] = result.map((subResult: any) =>
-                        processSelectionSet(selection.selectionSet!, subType, subResult)
-                      )
-                    } else {
-                      data[fieldName] = processSelectionSet(selection.selectionSet, subType, result)
+                    if (this.scalarMap.has(fieldType)) {
+                      const scalarType = this.scalarMap.get(fieldType)
+                      if (isListSelection) {
+                        data[fieldName] = result.map((subResult: any) =>
+                          scalarType && subResult !== null ? scalarType.parseValue(subResult) : subResult
+                        )
+                      } else {
+                        data[fieldName] = scalarType && result !== null ? scalarType.parseValue(result) : result
+                      }
+                      return
                     }
-                    return
-                  }
 
-                  throw new GraphQLError(`Unknown type ${fieldType}`)
-                })
-            )
-            executionChain = executeSequentially ? resultPromise : Promise.resolve()
-            break
-          }
-          case 'FragmentSpread': {
-            if (skip) {
-              break
-            }
-            const fragment = fragments[selection.name.value]
-            if (!fragment) {
-              errors.push(new GraphQLError(`Missing fragment ${selection.name.value}`))
-              break
-            }
+                    if (this.enumMap.has(fieldType)) {
+                      const possibleValues = this.enumMap.get(fieldType)!
+                      for (const r of Array.isArray(result) ? result : [result]) {
+                        if (!possibleValues.includes(r)) {
+                          errors.push(new GraphQLError(`Enum "${fieldType}" cannot represent value: "${r}"`))
+                          return null
+                        }
+                      }
 
-            data[SPREAD + ++spreadIndex] = processSelectionSet(fragment.selectionSet, type, parentData)
-            break
-          }
-          case 'InlineFragment': {
-            if (skip) {
-              break
-            }
-            if (selection.typeCondition?.name.value !== type.name.value) {
-              break
-            }
+                      data[fieldName] = result
+                      return
+                    }
 
-            data[SPREAD + ++spreadIndex] = processSelectionSet(selection.selectionSet, type, parentData)
-            break
+                    if (this.unionMap.has(fieldType) || this.interfaceMap.has(fieldType)) {
+                      const possibleTypes = this.unionMap.has(fieldType)
+                        ? this.unionMap.get(fieldType)!
+                        : this.interfaceMap.get(fieldType)!
+                      const typeResolver = asResolvers(this.resolvers[fieldType]).__resolveType
+                      if (!typeResolver) {
+                        throw new GraphQLError(`${fieldType}.__resolveType method is missing`)
+                      }
+
+                      const processTypeName = (typeName: string | null, subResult: any) => {
+                        typeName = typeName === undefined ? null : typeName
+                        if (typeName === null) {
+                          return null
+                        }
+
+                        if (!possibleTypes.has(typeName)) {
+                          throw new GraphQLError(`Union ${fieldName} cannot resolve to type ${typeName}`)
+                        }
+
+                        if (this.scalarMap.has(fieldType)) {
+                          const scalarType = this.scalarMap.get(fieldType)
+                          return scalarType && result !== null ? scalarType.parseValue(result) : result
+                        }
+
+                        if (!selection.selectionSet) {
+                          errors.push(new GraphQLError(`Missing sub selection for field ${selection.name.value}`))
+                          return null
+                        }
+
+                        const subType = this.objectMap.get(typeName)!
+                        return processSelectionSet(selection.selectionSet, subType, subResult)
+                      }
+
+                      if (isListSelection) {
+                        data[fieldName] = []
+                        result.forEach((subResult: any) => {
+                          promiseRegistry.add(
+                            Promise.resolve(typeResolver(subResult, context, resolveInfo)).then(typeName =>
+                              data[fieldName].push(processTypeName(typeName, subResult))
+                            )
+                          )
+                        })
+                      } else {
+                        promiseRegistry.add(
+                          Promise.resolve(typeResolver(result, context, resolveInfo)).then(typeName => {
+                            const r = processTypeName(typeName, result)
+                            data[fieldName] = r
+                          })
+                        )
+                      }
+                      return
+                    }
+
+                    if (this.objectMap.has(fieldType)) {
+                      if (!selection.selectionSet) {
+                        throw new GraphQLError(`Missing sub selection for field ${selection.name.value}`)
+                      }
+
+                      if (result === null) {
+                        data[fieldName] = null
+                        return
+                      }
+
+                      const subType = this.objectMap.get(fieldType)!
+                      if (isListSelection) {
+                        data[fieldName] = result.map((subResult: any) =>
+                          processSelectionSet(selection.selectionSet!, subType, subResult)
+                        )
+                      } else {
+                        data[fieldName] = processSelectionSet(selection.selectionSet, subType, result)
+                      }
+                      return
+                    }
+
+                    throw new GraphQLError(`Unknown type ${fieldType}`)
+                  })
+              )
+              executionChain = executeSequentially ? resultPromise : Promise.resolve()
+              break
+            }
+            case 'FragmentSpread': {
+              if (skip) {
+                break
+              }
+              const fragment = fragments[selection.name.value]
+              if (!fragment) {
+                errors.push(new GraphQLError(`Missing fragment ${selection.name.value}`))
+                break
+              }
+
+              data[SPREAD + ++spreadIndex] = processSelectionSet(fragment.selectionSet, type, parentData)
+              break
+            }
+            case 'InlineFragment': {
+              if (skip) {
+                break
+              }
+              if (selection.typeCondition?.name.value !== type.name.value) {
+                break
+              }
+
+              data[SPREAD + ++spreadIndex] = processSelectionSet(selection.selectionSet, type, parentData)
+              break
+            }
           }
         }
-      }
 
-      executeSequentially = false
+        executeSequentially = false
+      })()
+
       return data
     }
 

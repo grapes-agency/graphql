@@ -1,15 +1,22 @@
-export class PromiseRegistry extends Set<Promise<any>> {
+export class PromiseRegistry {
+  private promises = new Set()
+
+  public add(promise: any) {
+    this.promises.add(promise)
+    return promise
+  }
+
   public async all() {
     let currentPromiseCount = 0
-    let nextPromiseCount = this.size
+    let nextPromiseCount = this.promises.size
 
     while (nextPromiseCount > currentPromiseCount) {
       // eslint-disable-next-line no-await-in-loop
-      await Promise.all(this.values())
+      await Promise.all(this.promises.values())
       currentPromiseCount = nextPromiseCount
-      nextPromiseCount = this.size
+      nextPromiseCount = this.promises.size
     }
 
-    this.clear()
+    this.promises.clear()
   }
 }

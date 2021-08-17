@@ -47,19 +47,25 @@ export interface FieldDefinitionNodeWithResolver extends FieldDefinitionNode {
   resolve: Resolver
 }
 
-export interface InputResolveInfo {
+export interface InputFieldResolveInfo {
   parentType: InputObjectTypeDefinitionNode | null
   field: InputValueDefinitionNode
   arg: ArgumentNode | null
 }
 
-export type InputResolver = (root: any, info: InputResolveInfo) => any
-
-export interface InputValueDefinitionNodeWithResolver extends InputValueDefinitionNode {
-  resolve?: InputResolver
+export interface InputObjectResolveInfo {
+  type: InputObjectTypeDefinitionNode
+  arg: ArgumentNode | null
 }
 
-export interface InputObjectTypeDefinitionNodeWithResolver extends Omit<InputObjectTypeDefinitionNode, 'fields'> {
+export type InputFieldResolver<Context = any> = (root: any, context: Context, info: InputFieldResolveInfo) => any
+export type InputObjectResolver<Context = any> = (root: any, context: Context, info: InputObjectResolveInfo) => any
+
+export interface InputValueDefinitionNodeWithResolver<Context = any> extends InputValueDefinitionNode {
+  resolve?: InputFieldResolver<Context>
+}
+
+export interface InputObjectTypeDefinitionNodeWithResolver<Context = any> extends Omit<InputObjectTypeDefinitionNode, 'fields'> {
   fields: ReadonlyArray<InputValueDefinitionNodeWithResolver>
-  resolve?: InputResolver
+  resolve?: InputObjectResolver<Context>
 }
