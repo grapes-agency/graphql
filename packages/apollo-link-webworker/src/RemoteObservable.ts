@@ -1,9 +1,16 @@
 import { Observable } from '@apollo/client'
 import * as Comlink from 'comlink'
+import type { ExecutionResult } from 'graphql'
+
+// eslint-disable-next-line handle-callback-err
+const objectifyError = <E extends Error>(error: E) =>
+  Object.fromEntries(
+    (Object.getOwnPropertyNames(error) as Array<keyof E>).map(propertyName => [propertyName, error[propertyName]])
+  )
 
 Comlink.transferHandlers.set('OBSERVABLE', {
   canHandle: (obj: any): obj is Observable<any> => obj instanceof Observable,
-  serialize: (observable: Observable<any>) => {
+  serialize: (observable: Observable<ExecutionResult>) => {
     const { port1, port2 } = new MessageChannel()
 
     port1.start()
@@ -15,7 +22,7 @@ Comlink.transferHandlers.set('OBSERVABLE', {
       const [port] = event.ports
       port.start()
       const subscription = observable.subscribe({
-        next: (next: any) => port.postMessage({ next }),
+        next: next => port.postMessage({ next: { ...next, errors: next.errors?.map(objectifyError) || undefined } }),
         error: (error: any) => port.postMessage({ error }),
         complete: () => port.postMessage({ complete: true }),
       })
