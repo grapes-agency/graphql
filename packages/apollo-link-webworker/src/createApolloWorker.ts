@@ -7,15 +7,39 @@ import './RemoteOperation'
 
 type RemoteRequestHandler = (operation: Operation, forward?: NextLink) => Promise<Observable<FetchResult> | null>
 
+const createAsyncLink = () => {
+  let release: ((link: ApolloLink | Promise<ApolloLink>) => void) | null = null
+  let linkPromise = new Promise<ApolloLink | Promise<ApolloLink>>(resolve => {
+    release = link => {
+      release = null
+      resolve(link)
+    }
+  })
+  return {
+    get: () => linkPromise,
+    set: (link: ApolloLink | Promise<ApolloLink>) => {
+      if (release) {
+        release(link)
+      } else {
+        linkPromise = Promise.resolve(link)
+      }
+    },
+  }
+}
+
 export interface ApolloWorker {
   setup: (options: Record<string, any>) => Promise<void>
   request: RemoteRequestHandler
 }
 
-export const createApolloWorker = (
-  apolloLink: ApolloLink | ((options: Record<string, any>) => ApolloLink | Promise<ApolloLink>)
+export const createApolloWorker = <Options = Record<string, any>>(
+  apolloLink: ApolloLink | ((options: Options) => ApolloLink | Promise<ApolloLink>)
 ) => {
-  let link: Promise<ApolloLink>
+  const link = createAsyncLink()
+
+  if (apolloLink instanceof ApolloLink) {
+    link.set(apolloLink)
+  }
 
   const remoteRequestHandler: RemoteRequestHandler = async (operation, forward) => {
     let next: NextLink | undefined
@@ -35,13 +59,25 @@ export const createApolloWorker = (
         })
     }
 
-    return (await link).request(operation, next)
+    return (await link.get()).request(operation, next)
   }
 
   expose({
-    setup: (options: Record<string, any>) => {
-      link = Promise.resolve(apolloLink instanceof ApolloLink ? apolloLink : apolloLink(options))
+    setup: (options: Options) => {
+      if (apolloLink instanceof ApolloLink) {
+        throw new Error('cannot setup apollo worker without create function')
+      }
+
+      link.set(apolloLink(options))
     },
     request: remoteRequestHandler,
   })
+
+  class FakeWorker {
+    constructor() {
+      throw new Error('You did not properly loaded the link as Worker')
+    }
+  }
+
+  return FakeWorker as new () => Worker
 }

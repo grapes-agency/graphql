@@ -6,13 +6,22 @@ import type { ApolloWorker } from './createApolloWorker'
 import './RemoteObservable'
 import './RemoteOperation'
 
-export class ApolloWebWorkerLink extends ApolloLink {
+export class ApolloWebWorkerLink<Options = Record<string, any>> extends ApolloLink {
   private apolloWorker: ApolloWorker
 
-  constructor(webWorker: Worker, protected options: Record<string, any> = {}) {
+  constructor(webWorker: Worker, options?: Options) {
+    if (!(webWorker instanceof Worker)) {
+      throw new Error('ApolloWebWorkerLink needs an initialized Worker')
+    }
     super()
     this.apolloWorker = wrap(webWorker) as any
-    this.apolloWorker.setup(this.options)
+    if (options) {
+      this.apolloWorker.setup(options)
+    }
+  }
+
+  updateOptions(options: Options) {
+    this.apolloWorker.setup(options)
   }
 
   public request(operation: Operation, forward?: NextLink) {
@@ -37,5 +46,5 @@ export class ApolloWebWorkerLink extends ApolloLink {
   }
 }
 
-export const createWebWorkerLink = (webWorker: Worker, options?: Record<string, any>) =>
-  new ApolloWebWorkerLink(webWorker, options)
+export const createWebWorkerLink = <Options = Record<string, any>>(webWorker: Worker, options?: Options) =>
+  new ApolloWebWorkerLink<Options>(webWorker, options)
