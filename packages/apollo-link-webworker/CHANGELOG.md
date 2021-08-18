@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.7](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.6...@grapes-agency/apollo-link-webworker@1.0.0-alpha.7) (2021-08-18)
+
+
+### Bug Fixes
+
+* **apollo-link-webworker:** Convert GraphQLErrors in plain JSON before transfer ([d3f94c7](https://github.com/grapes-agency/graphql/commit/d3f94c77137d69da9008793834371e9b34e8a18e))
+
+
+
+
+
 # [1.0.0-alpha.6](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.5...@grapes-agency/apollo-link-webworker@1.0.0-alpha.6) (2021-08-18)
 
 
