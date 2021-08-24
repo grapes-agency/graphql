@@ -5,6 +5,7 @@ import type {
   URLSearchParamsInit,
   RawRequestOptions,
   RawRequestOptionsWithParams,
+  Body,
 } from './types'
 
 export abstract class RESTDataSource {
