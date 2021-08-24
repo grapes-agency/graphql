@@ -178,7 +178,7 @@ export abstract class RESTDataSource {
     return this.request<TResult>({ method: 'PUT', path, body, ...init })
   }
 
-  protected delete(path: string, params?: URLSearchParamsInit, init?: RawRequestOptions) {
-    return this.request({ method: 'DELETE', path, params, ...init })
+  protected delete<TResult = any>(path: string, params?: URLSearchParamsInit, init?: RawRequestOptions) {
+    return this.request<TResult>({ method: 'DELETE', path, params, ...init })
   }
 }
