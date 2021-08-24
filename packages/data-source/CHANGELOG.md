@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.2.0...@grapes-agency/data-source@1.2.1) (2021-08-24)
+
+
+### Bug Fixes
+
+* **data-source:** Correctly type Body ([424f4b2](https://github.com/grapes-agency/graphql/commit/424f4b2b6af0763d3b640e69e484db7d3c9af08f))
+
+
+
+
+
 # [1.2.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.1.2...@grapes-agency/data-source@1.2.0) (2021-08-24)
 
 
