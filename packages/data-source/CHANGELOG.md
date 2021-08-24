@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.1.2...@grapes-agency/data-source@1.2.0) (2021-08-24)
+
+
+### Features
+
+* **data-source:** Allow typing of delete requests ([ed2282e](https://github.com/grapes-agency/graphql/commit/ed2282e9162888b3e2c31e5c0e61a06ca500c61c))
+
+
+
+
+
 ## [1.1.2](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.1.1...@grapes-agency/data-source@1.1.2) (2021-08-17)
 
 **Note:** Version bump only for package @grapes-agency/data-source
