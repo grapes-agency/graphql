@@ -45,7 +45,7 @@ import type {
   FieldDefinitionNodeWithResolver,
   InputObjectTypeDefinitionNodeWithResolver,
 } from './interfaces'
-import { mergeDeep } from './utils'
+import { isObject, mergeDeep } from './utils'
 
 const typenameFieldDefinition: FieldDefinitionNode = {
   kind: 'FieldDefinition',
@@ -385,7 +385,7 @@ export class GraphQLRuntime {
         data[key] = value.map(v => this.compose(v))
       }
 
-      if (typeof value === 'object' && value !== null) {
+      if (isObject(value)) {
         data[key] = this.compose(value)
       }
 

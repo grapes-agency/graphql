@@ -3,6 +3,16 @@ import type { FieldNode, DocumentNode, SelectionSetNode, OperationDefinitionNode
 import { mergeSelectionSets } from './mergeSelectionSets'
 import { parseDocument } from './parseDocument'
 
+const removeLoc = (obj: Record<string, any>): any =>
+  Object.fromEntries(
+    Object.entries(obj)
+      .filter(([key]) => key !== 'loc')
+      .map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value.map(removeLoc) : typeof value === 'object' ? removeLoc(value) : value,
+      ])
+  )
+
 export class ExternalQuery {
   protected fields = new Set<FieldNode>()
   protected keys = new Set<string>()
@@ -11,7 +21,7 @@ export class ExternalQuery {
   }
 
   addField(field: FieldNode) {
-    this.fields.add(field)
+    this.fields.add(removeLoc(field))
   }
 
   addKeys(keys: Array<string>) {
