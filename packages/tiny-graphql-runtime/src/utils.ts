@@ -1,4 +1,8 @@
-export const isObject = (obj: any): obj is Record<string, any> => obj && typeof obj === 'object' && !Array.isArray(obj)
+export const isObject = (obj: any): obj is Record<string, any> =>
+  typeof obj === 'object' &&
+  obj !== null &&
+  obj.constructor === Object &&
+  Object.prototype.toString.call(obj) === '[object Object]'
 
 export const mergeDeep = (target: Record<string, any>, source: Record<string, any>) => {
   Object.keys(source).forEach(key => {
