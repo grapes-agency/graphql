@@ -406,14 +406,37 @@ export class GraphQLRuntime {
       return { errors: [new GraphQLError('Operation definition missing')] }
     }
 
-    for (const variableDefinition of mainOperation.variableDefinitions || []) {
-      if (
-        variableDefinition.type.kind === 'NonNullType' &&
-        !variableDefinition.defaultValue &&
-        !(variableDefinition.variable.name.value in args)
-      ) {
+    for (const { variable, defaultValue, type } of mainOperation.variableDefinitions || []) {
+      const name = variable.name.value
+
+      if (name in args) {
+        break
+      }
+
+      if (defaultValue) {
+        switch (defaultValue.kind) {
+          case 'Variable':
+          case 'ObjectValue': {
+            throw new GraphQLError(`Default value of variable ${name} cannot be of type ${defaultValue.kind}`)
+          }
+          case 'NullValue': {
+            args[name] = null
+            break
+          }
+          case 'ListValue': {
+            args[name] = defaultValue.values
+            break
+          }
+          default: {
+            args[name] = defaultValue.value
+          }
+        }
+        break
+      }
+
+      if (type.kind === 'NonNullType') {
         return {
-          errors: [new GraphQLError(`Missing variable ${variableDefinition.variable.name.value}`)],
+          errors: [new GraphQLError(`Missing variable ${name}`)],
         }
       }
     }
