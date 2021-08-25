@@ -380,7 +380,8 @@ export class GraphQLRuntime {
   }
 
   protected compose(data: Record<string, any>): Record<string, any> {
-    for (const [key, value] of Object.entries(data)) {
+    for (const key of Object.keys(data)) {
+      const value = data[key]
       if (Array.isArray(value)) {
         data[key] = value.map(v => this.compose(v))
       }
@@ -390,8 +391,8 @@ export class GraphQLRuntime {
       }
 
       if (key.startsWith(SPREAD)) {
-        mergeDeep(data, value)
         delete data[key]
+        mergeDeep(data, value)
       }
     }
 
@@ -744,7 +745,8 @@ export class GraphQLRuntime {
     try {
       const data = processSelectionSet(mainOperation.selectionSet, mainType, rootData)
       await promiseRegistry.all()
-      return { data: this.compose(data), errors: errors.length === 0 ? undefined : errors }
+      const x = this.compose(data)
+      return { data: x, errors: errors.length === 0 ? undefined : errors }
     } catch (error) {
       return { data: null, errors: errors.length === 0 ? [error] : errors }
     }
