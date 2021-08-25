@@ -228,7 +228,15 @@ export class ResolutionStrategy {
 
     const data = { ...rootData.data }
     for (const [path, info] of this.extensionDocuments) {
-      const operationData = getWithPath(data, path)
+      let operationData: Array<{ data: any; path: string }>
+      try {
+        operationData = getWithPath(data, path)
+      } catch {
+        // @todo
+        // this error happes when the data is not available due to @include / @skip rules.
+        // Those queries should be ignored way earlier
+        continue
+      }
       const typeInfo = getTypeInfo(info)
 
       for (const opData of operationData) {

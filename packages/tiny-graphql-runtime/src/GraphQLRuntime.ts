@@ -768,8 +768,7 @@ export class GraphQLRuntime {
     try {
       const data = processSelectionSet(mainOperation.selectionSet, mainType, rootData)
       await promiseRegistry.all()
-      const x = this.compose(data)
-      return { data: x, errors: errors.length === 0 ? undefined : errors }
+      return { data: this.compose(data), errors: errors.length === 0 ? undefined : errors }
     } catch (error) {
       return { data: null, errors: errors.length === 0 ? [error] : errors }
     }
