@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.4](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.3...@grapes-agency/tiny-graphql-runtime@1.3.4) (2021-08-25)
+
+
+### Bug Fixes
+
+* **apollo-link-local-federation:** Don't JSON stringify loc ([ab6fe00](https://github.com/grapes-agency/graphql/commit/ab6fe00de2478e6bc5e26573654e186b7b2730b3))
+
+
+
+
+
 ## [1.3.3](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.2...@grapes-agency/tiny-graphql-runtime@1.3.3) (2021-08-25)
 
 
