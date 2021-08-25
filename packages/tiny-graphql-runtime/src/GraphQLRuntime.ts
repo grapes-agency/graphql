@@ -45,6 +45,7 @@ import type {
   FieldDefinitionNodeWithResolver,
   InputObjectTypeDefinitionNodeWithResolver,
 } from './interfaces'
+import { mergeDeep } from './utils'
 
 const typenameFieldDefinition: FieldDefinitionNode = {
   kind: 'FieldDefinition',
@@ -389,7 +390,7 @@ export class GraphQLRuntime {
       }
 
       if (key.startsWith(SPREAD)) {
-        Object.assign(data, value)
+        mergeDeep(data, value)
         delete data[key]
       }
     }

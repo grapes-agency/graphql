@@ -185,4 +185,56 @@ describe('fragments', () => {
       },
     })
   })
+
+  it('resolves merges multiple fragments', async () => {
+    const typeDefs = gql`
+      type Prop {
+        a: String!
+        b: String!
+      }
+      type Test {
+        prop: Prop!
+      }
+      type Query {
+        test: Test!
+      }
+    `
+
+    const resolvers: Resolvers = {
+      Query: {
+        test: () => ({ prop: { a: 'A', b: 'B' } }),
+      },
+    }
+
+    const query = gql`
+      query Test {
+        test {
+          ...F1
+          ...F2
+        }
+      }
+      fragment F1 on Test {
+        prop {
+          a
+        }
+      }
+      fragment F2 on Test {
+        prop {
+          b
+        }
+      }
+    `
+    const runtime = new GraphQLRuntime({ typeDefs, resolvers })
+    const result = await runtime.execute({ query })
+
+    expect(result.errors).toBeUndefined()
+    expect(result.data).toEqual({
+      test: {
+        prop: {
+          a: 'A',
+          b: 'B',
+        },
+      },
+    })
+  })
 })
