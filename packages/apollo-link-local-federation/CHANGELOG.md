@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.8](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.7...@grapes-agency/apollo-link-local-federation@1.2.8) (2021-08-25)
+
+
+### Bug Fixes
+
+* **apollo-link-local-federation:** Don't hang forever when operation data is not available ([4ef8215](https://github.com/grapes-agency/graphql/commit/4ef821540d216420e0abb2abb6ffc902464dc8d1))
+
+
+
+
+
 ## [1.2.7](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.6...@grapes-agency/apollo-link-local-federation@1.2.7) (2021-08-25)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-federation
