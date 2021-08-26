@@ -169,6 +169,9 @@ export const distributeQuery = (
           return null
         }
         const hint = fragmentHints.get(name)!
+        const parent = hint[hint.length - 1]
+        const parentType = parent.service.getType(fragmentDefinition.typeCondition.name.value)
+        hint[hint.length - 1].type = parentType!
         fieldPath.push(...hint)
       },
       leave: fragmentDefinition => {
