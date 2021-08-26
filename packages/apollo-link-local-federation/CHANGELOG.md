@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.9](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.8...@grapes-agency/apollo-link-local-federation@1.2.9) (2021-08-26)
+
+
+### Bug Fixes
+
+* **apollo-link-local-federation:** Better gql parsing ([93abdeb](https://github.com/grapes-agency/graphql/commit/93abdeb6b064d310d4e64e6bd3c1b6f1c014bd6f))
+* **apollo-link-local-federation:** Correctly resolve fragment based on type condition ([e9cb8c9](https://github.com/grapes-agency/graphql/commit/e9cb8c953cf36e8e657f1192c71d3ee7b298325d))
+
+
+
+
+
 ## [1.2.8](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.7...@grapes-agency/apollo-link-local-federation@1.2.8) (2021-08-25)
 
 
