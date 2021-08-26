@@ -1,4 +1,3 @@
-import { gql } from '@apollo/client/core'
 import {
   isObjectTypeExtension,
   isObjectTypeDefinition,
@@ -23,6 +22,7 @@ import { ExternalQuery } from './ExternalQuery'
 import type { LocalFederationService } from './LocalFederationService'
 import { UsedFragmentsSet } from './UsedFragmentsSet'
 import { mergeSelectionSets } from './mergeSelectionSets'
+import { parseDocument } from './parseDocument'
 
 export interface DocumentInfo {
   service: LocalFederationService
@@ -142,7 +142,7 @@ export const distributeQuery = (
           return
         }
 
-        const { selectionSet } = gql(`{${Array.from(inject).join(' ')}}`).definitions[0] as OperationDefinitionNode
+        const { selectionSet } = parseDocument(Array.from(inject).join(' ')).definitions[0] as OperationDefinitionNode
 
         return mergeSelectionSets(baseSelectionSet, selectionSet)
       },

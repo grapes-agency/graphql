@@ -24,6 +24,7 @@ export const parseDocument = (template: string): DocumentNode => {
       })
       .trim()
       .split(/ +/g)
+      .map(part => part.replace(/,$/, ''))
 
     const selections: Array<Writable<FieldNode>> = []
 
