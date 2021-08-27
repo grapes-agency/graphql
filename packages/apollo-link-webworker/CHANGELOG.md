@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.8](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.7...@grapes-agency/apollo-link-webworker@1.0.0-alpha.8) (2021-08-27)
+
+
+### Bug Fixes
+
+* **apollo-link-webworker:** Removed side effects ([94b3561](https://github.com/grapes-agency/graphql/commit/94b35611d0be2e60f8387cd3237e34ada2cf6101))
+
+
+
+
+
 # [1.0.0-alpha.7](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.6...@grapes-agency/apollo-link-webworker@1.0.0-alpha.7) (2021-08-18)
 
 
