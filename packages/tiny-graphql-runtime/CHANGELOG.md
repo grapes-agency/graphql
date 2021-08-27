@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.7](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.6...@grapes-agency/tiny-graphql-runtime@1.3.7) (2021-08-27)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** Only apply fragment when typecondition is fullfilled ([2c44212](https://github.com/grapes-agency/graphql/commit/2c44212fb965506cb3a027e8610e2e91b7195b12))
+
+
+
+
+
 ## [1.3.6](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.5...@grapes-agency/tiny-graphql-runtime@1.3.6) (2021-08-25)
 
 
