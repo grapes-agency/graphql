@@ -474,7 +474,6 @@ export class GraphQLRuntime {
       ;(async () => {
         for (const selection of selectionSet.selections) {
           const directives = await promiseRegistry.add(this.processDirectives(selection, args))
-
           const skip = directives.skip?.if === true || directives.include?.if === false
 
           switch (selection.kind) {
@@ -742,6 +741,10 @@ export class GraphQLRuntime {
                 break
               }
 
+              if (fragment.typeCondition.name.value !== type.name.value) {
+                break
+              }
+
               data[SPREAD + ++spreadIndex] = processSelectionSet(fragment.selectionSet, type, parentData)
               break
             }
@@ -749,6 +752,7 @@ export class GraphQLRuntime {
               if (skip) {
                 break
               }
+
               if (selection.typeCondition?.name.value !== type.name.value) {
                 break
               }

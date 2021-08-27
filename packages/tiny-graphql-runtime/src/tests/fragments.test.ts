@@ -186,7 +186,7 @@ describe('fragments', () => {
     })
   })
 
-  it('resolves merges multiple fragments', async () => {
+  it('merges multiple fragments', async () => {
     const typeDefs = gql`
       type Prop {
         a: String!
@@ -235,6 +235,66 @@ describe('fragments', () => {
           b: 'B',
         },
       },
+    })
+  })
+  it('applies fragments to the correct type', async () => {
+    const typeDefs = gql`
+      interface GenericProp {
+        generic: String!
+      }
+
+      type AProp implements GenericProp {
+        generic: String!
+        a: String!
+      }
+
+      type BProp implements GenericProp {
+        generic: String!
+        b: String!
+      }
+
+      type Query {
+        test: [GenericProp!]!
+      }
+    `
+
+    const resolvers: Resolvers = {
+      GenericProp: {
+        __resolveType: data => (data.type === 'A' ? 'AProp' : 'BProp'),
+      },
+      Query: {
+        test: () => [
+          { generic: 'GENERIC_1', type: 'A' },
+          { generic: 'GENERIC_2', type: 'A' },
+          { generic: 'GENERIC_3', type: 'A' },
+        ],
+      },
+      AProp: {
+        a: () => 'A',
+      },
+    }
+
+    const query = gql`
+      query Test {
+        test {
+          generic
+          ...Fragment
+        }
+      }
+      fragment Fragment on AProp {
+        a
+      }
+    `
+    const runtime = new GraphQLRuntime({ typeDefs, resolvers })
+    const result = await runtime.execute({ query })
+
+    expect(result.errors).toBeUndefined()
+    expect(result.data).toEqual({
+      test: [
+        { generic: 'GENERIC_1', a: 'A' },
+        { generic: 'GENERIC_2', a: 'A' },
+        { generic: 'GENERIC_3', a: 'A' },
+      ],
     })
   })
 })
