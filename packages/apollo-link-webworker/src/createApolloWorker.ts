@@ -31,6 +31,18 @@ const createAsyncLink = () => {
   }
 }
 
+const maybeFixDev = () => {
+  const anyGlobal = global as any
+
+  if (!('__DEV__' in anyGlobal)) {
+    try {
+      anyGlobal.__DEV__ = process.env.NODE_ENV !== 'production'
+    } catch {
+      anyGlobal.__DEV__ = false
+    }
+  }
+}
+
 export interface ApolloWorker {
   setup: (options: Record<string, any>) => Promise<void>
   request: RemoteRequestHandler
@@ -39,6 +51,7 @@ export interface ApolloWorker {
 export const createApolloWorker = <Options = Record<string, any>>(
   apolloLink: ApolloLink | ((options: Options) => ApolloLink | Promise<ApolloLink>)
 ) => {
+  maybeFixDev()
   const link = createAsyncLink()
 
   if (apolloLink instanceof ApolloLink) {
