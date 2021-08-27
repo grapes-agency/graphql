@@ -22,4 +22,6 @@ const operationTransferHandler: Comlink.TransferHandler<Operation, Omit<Operatio
   },
 }
 
-Comlink.transferHandlers.set('OPERATION', operationTransferHandler)
+export const setupRemoteOperation = () => {
+  Comlink.transferHandlers.set('OPERATION', operationTransferHandler)
+}

@@ -2,8 +2,12 @@
 import type { FetchResult, NextLink, Operation } from '@apollo/client'
 import { ApolloLink, Observable } from '@apollo/client'
 import { expose } from 'comlink'
-import './RemoteObservable'
-import './RemoteOperation'
+
+import { setupRemoteObservable } from './RemoteObservable'
+import { setupRemoteOperation } from './RemoteOperation'
+
+setupRemoteObservable()
+setupRemoteOperation()
 
 type RemoteRequestHandler = (operation: Operation, forward?: NextLink) => Promise<Observable<FetchResult> | null>
 
