@@ -68,7 +68,11 @@ export const createApolloWorker = <Options = Record<string, any>>(
           }
 
           ;(forward(operation) as unknown as Promise<Observable<FetchResult>>).then(observable => {
-            const subscription = observable.subscribe(observer)
+            const subscription = observable.subscribe({
+              next: data => observer.next(data),
+              error: error => observer.error(error),
+              complete: () => observer.complete(),
+            })
             unsubscribe = () => subscription.unsubscribe()
           })
 

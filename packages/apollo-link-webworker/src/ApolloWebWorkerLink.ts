@@ -40,7 +40,11 @@ export class ApolloWebWorkerLink<Options = Record<string, any>> extends ApolloLi
           return
         }
 
-        const subscription = observable.subscribe(observer)
+        const subscription = observable.subscribe({
+          next: data => observer.next(data),
+          error: error => observer.error(error),
+          complete: () => observer.complete(),
+        })
         unsubscribe = () => subscription.unsubscribe()
       })()
 
