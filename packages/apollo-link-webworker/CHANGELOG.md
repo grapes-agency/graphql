@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.11](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.10...@grapes-agency/apollo-link-webworker@1.0.0-alpha.11) (2021-09-07)
+
+
+### Bug Fixes
+
+* **apollo-link-webworker:** Don't use observer as callback ([f3db27f](https://github.com/grapes-agency/graphql/commit/f3db27f8c44dfb3ac8c7fba1b41956f768bdd659))
+
+
+
+
+
 # [1.0.0-alpha.10](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.9...@grapes-agency/apollo-link-webworker@1.0.0-alpha.10) (2021-09-07)
 
 

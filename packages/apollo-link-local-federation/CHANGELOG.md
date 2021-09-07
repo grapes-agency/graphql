@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.14](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.13...@grapes-agency/apollo-link-local-federation@1.2.14) (2021-09-07)
+
+
+### Bug Fixes
+
+* **apollo-link-local-federation:** Don't use observer as callback ([1803976](https://github.com/grapes-agency/graphql/commit/1803976fe73eb02f5f3911d76e0372ccd98f173a))
+
+
+
+
+
 ## [1.2.13](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.12...@grapes-agency/apollo-link-local-federation@1.2.13) (2021-09-07)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-federation
