@@ -21,17 +21,17 @@ export const asyncIteratorToObservable = (
       const pullValue = () => {
         asyncIterator
           .next()
-          .then(nextValue => {
+          .then(({ value }) => {
             if (resolver.resolve) {
-              nextValue = resolver.resolve(nextValue, args, context, info)
+              value = resolver.resolve(value, args, context, info)
             }
 
-            Promise.resolve(nextValue).then(data => {
+            Promise.resolve(value).then(resolvedValue => {
               if (stopped) {
                 return
               }
 
-              observer.next(data.value)
+              observer.next(resolvedValue)
             })
 
             pullValue()
