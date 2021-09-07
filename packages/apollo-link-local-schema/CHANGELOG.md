@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.10](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.3.9...@grapes-agency/apollo-link-local-schema@1.3.10) (2021-09-07)
+
+
+### Bug Fixes
+
+* **apollo-link-local-schema:** Don't use observer as callback ([6ee9d9f](https://github.com/grapes-agency/graphql/commit/6ee9d9f8bd01d71ae87a5311bb550572d804e9c4))
+
+
+
+
+
 ## [1.3.9](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.3.8...@grapes-agency/apollo-link-local-schema@1.3.9) (2021-09-07)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-schema
