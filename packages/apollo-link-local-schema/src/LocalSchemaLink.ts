@@ -182,12 +182,12 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
             observable = observable.concat(...observables.slice(1))
           }
           subscription = observable.subscribe({
-            next: observer.next,
+            next: nextData => observer.next(nextData),
             error: error => {
               observer.next({ errors: [error] })
               observer.complete()
             },
-            complete: observer.complete,
+            complete: () => observer.complete(),
           })
         })
         .catch(error => {
