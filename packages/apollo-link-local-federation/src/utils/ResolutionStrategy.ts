@@ -276,7 +276,7 @@ export class ResolutionStrategy {
       }
 
       const subscription = observable.subscribe({
-        ...observer,
+        error: error => observer.error(error),
         next: async result => {
           if (result.data === null) {
             observer.next(result)
@@ -291,7 +291,9 @@ export class ResolutionStrategy {
         },
       })
 
-      return () => subscription.unsubscribe()
+      return () => {
+        subscription.unsubscribe()
+      }
     })
   }
 }
