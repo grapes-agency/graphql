@@ -60,7 +60,7 @@ export abstract class RESTDataSource {
       response.status !== 204 &&
       contentLength !== '0' &&
       contentType &&
-      (contentType.startsWith('application/json') || contentType.startsWith('application/hal+json'))
+      (contentType.startsWith('application/json') || contentType.match(/^application\/.+\+json/))
     ) {
       return response.json()
     }
