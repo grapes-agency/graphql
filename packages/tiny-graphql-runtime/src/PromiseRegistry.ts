@@ -1,8 +1,8 @@
 export class PromiseRegistry {
   private promises = new Set()
 
-  public add(promise: any) {
-    this.promises.add(promise)
+  public add(promise: Promise<any> | (() => Promise<any>)) {
+    this.promises.add(typeof promise === 'function' ? promise() : promise)
     return promise
   }
 

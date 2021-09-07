@@ -533,33 +533,18 @@ export class GraphQLRuntime {
 
               if (expectSubscription) {
                 expectSubscription = false
+                promiseRegistry.add(async () => {
+                  let generatedArgs: Record<string, any>
+                  try {
+                    generatedArgs = await argsPromise
+                  } catch {
+                    return
+                  }
 
-                const mapSubscriptionResult = (result: any) =>
-                  new Observable(observer => {
-                    const processsedData = processSelectionSet(
-                      selectionSet,
-                      { ...type, name: { kind: 'Name', value: '__SUBSCRIPTON__' } },
-                      result
-                    )
-
-                    promiseRegistry.all().then(() => {
-                      observer.next(this.compose(processsedData))
-                    })
-                  })
-
-                if (isSubscriptionResolver(resolver)) {
-                  data[fieldName] = asyncIteratorToObservable(resolver, parentData, args, context, resolveInfo).flatMap(
-                    mapSubscriptionResult
-                  )
-                } else {
-                  promiseRegistry.add(async () => {
-                    let generatedArgs: Record<string, any>
-                    try {
-                      generatedArgs = await argsPromise
-                    } catch {
-                      return
-                    }
-
+                  let subscriptionResolver: SubscriptionResolver
+                  if (isSubscriptionResolver(resolver)) {
+                    subscriptionResolver = resolver
+                  } else {
                     const result = await resolver(parentData, generatedArgs, context, resolveInfo)
                     if (!isSubscriptionResolver(result)) {
                       data[fieldName] = null
@@ -568,11 +553,31 @@ export class GraphQLRuntime {
                       )
                       return
                     }
-                    data[fieldName] = asyncIteratorToObservable(result, parentData, args, context, resolveInfo).flatMap(
-                      mapSubscriptionResult
-                    )
-                  })
-                }
+                    subscriptionResolver = result
+                  }
+
+                  data[fieldName] = asyncIteratorToObservable(
+                    subscriptionResolver,
+                    parentData,
+                    generatedArgs,
+                    context,
+                    resolveInfo
+                  ).flatMap(
+                    (result: any) =>
+                      new Observable(observer => {
+                        const processsedData = processSelectionSet(
+                          selectionSet,
+                          { ...type, name: { kind: 'Name', value: '__SUBSCRIPTON__' } },
+                          result
+                        )
+
+                        promiseRegistry.all().then(() => {
+                          observer.next(this.compose(processsedData))
+                        })
+                      })
+                  )
+                })
+
                 break
               }
               let resultPromise: Promise<any>
