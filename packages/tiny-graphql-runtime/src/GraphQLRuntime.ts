@@ -383,7 +383,12 @@ export class GraphQLRuntime {
     for (const key of Object.keys(data)) {
       const value = data[key]
       if (Array.isArray(value)) {
-        data[key] = value.map(v => this.compose(v))
+        data[key] = value.map(v => {
+          if (isObject(v)) {
+            return this.compose(v)
+          }
+          return v
+        })
       }
 
       if (isObject(value)) {
