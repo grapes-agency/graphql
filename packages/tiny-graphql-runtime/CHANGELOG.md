@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.10](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.9...@grapes-agency/tiny-graphql-runtime@1.3.10) (2021-09-10)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** Don't compose non object properties ([9ce7efb](https://github.com/grapes-agency/graphql/commit/9ce7efb7fbcbf130ec18a0217d73d2d8d3c267f6))
+
+
+
+
+
 ## [1.3.9](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.8...@grapes-agency/tiny-graphql-runtime@1.3.9) (2021-09-07)
 
 
