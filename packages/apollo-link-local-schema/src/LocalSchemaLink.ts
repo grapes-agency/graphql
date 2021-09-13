@@ -205,4 +205,5 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
   }
 }
 
-export const createLocalSchemaLink = (options: LocalSchemaLinkOptions) => new LocalSchemaLink(options)
+export const createLocalSchemaLink = <Context = any>(options: LocalSchemaLinkOptions<Context>) =>
+  new LocalSchemaLink<Context>(options)
