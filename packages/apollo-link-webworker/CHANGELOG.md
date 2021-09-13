@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.13](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.12...@grapes-agency/apollo-link-webworker@1.0.0-alpha.13) (2021-09-13)
+
+
+### Features
+
+* **apollo-link-webworker:** Added generic error handling ([552d163](https://github.com/grapes-agency/graphql/commit/552d16320f227a36694914a97af858633144b72a))
+
+
+
+
+
 # [1.0.0-alpha.12](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.11...@grapes-agency/apollo-link-webworker@1.0.0-alpha.12) (2021-09-13)
 
 
