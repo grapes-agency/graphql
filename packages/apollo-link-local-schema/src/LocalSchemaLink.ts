@@ -15,7 +15,7 @@ import { mergeDocuments, splitDocument } from './utils'
 interface LocalSchemaLinkOptions<Context = any> {
   typeDefs: DocumentNode | Array<DocumentNode>
   resolvers?: Resolvers<Context> | Array<Resolvers<Context>>
-  context?: Context | (() => Context)
+  context?: Context | ((operation: Operation) => Context)
   introspection?: boolean
   schemaDirectives?: Record<string, SchemaDirectiveVisitor>
 }
@@ -26,7 +26,7 @@ interface FederatedInfo {
 
 export class LocalSchemaLink<Context = any> extends ApolloLink {
   private processedDocuments = new Map<DocumentNode, DocumentsPair>()
-  private context: Context | (() => Context) | undefined
+  private context: Context | ((operation: Operation) => Context) | undefined
   private initalized = false
   private federated?: LocalFederationSupport
   private runtime!: GraphQLRuntime
@@ -67,11 +67,12 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
     this.initalized = true
   }
 
-  private getContext() {
-    if (typeof this.context === 'function') {
-      return (this.context as () => Context)()
+  private getContext(operation: Operation) {
+    let { context } = this
+    if (typeof context === 'function') {
+      context = (context as (operation: Operation) => Context)(operation)
     }
-    return this.context
+    return { ...context, ...operation.getContext() }
   }
 
   public __addFederationSupport(info: FederatedInfo) {
@@ -130,7 +131,7 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
             this.runtime
               .execute({
                 query: internalQuery!,
-                context: this.getContext(),
+                context: this.getContext(operation),
                 args: variables,
               })
               .then(({ data, errors }) => {
@@ -156,7 +157,7 @@ export class LocalSchemaLink<Context = any> extends ApolloLink {
       let subscription: ZenObservable.Subscription
 
       this.runtime
-        .execute({ query: internalQuery!, context: this.getContext(), args: variables })
+        .execute({ query: internalQuery!, context: this.getContext(operation), args: variables })
         .then(({ data, errors }) => {
           if (!data) {
             observer.complete()
