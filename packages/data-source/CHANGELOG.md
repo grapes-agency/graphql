@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.2.2...@grapes-agency/data-source@1.3.0) (2021-09-13)
+
+
+### Features
+
+* **data-source:** Accept fetchOptions ([6767789](https://github.com/grapes-agency/graphql/commit/6767789b71bb182dcf513e5dc2c858003027e7d2))
+
+
+
+
+
 ## [1.2.2](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.2.1...@grapes-agency/data-source@1.2.2) (2021-09-07)
 
 

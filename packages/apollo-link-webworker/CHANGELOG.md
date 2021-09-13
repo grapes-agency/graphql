@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.12](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.11...@grapes-agency/apollo-link-webworker@1.0.0-alpha.12) (2021-09-13)
+
+
+### Features
+
+* **apollo-link-webworker:** Deep context serialization, support for AbortSignal ([eb54bcf](https://github.com/grapes-agency/graphql/commit/eb54bcf29decdbc2ed3af6d22accc3e0b2e8f126))
+
+
+
+
+
 # [1.0.0-alpha.11](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.10...@grapes-agency/apollo-link-webworker@1.0.0-alpha.11) (2021-09-07)
 
 
