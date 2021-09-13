@@ -26,14 +26,19 @@
     "access": "public"
   },
   "devDependencies": {
+    "@apollo/client": "^3.4.11",
     "@types/node-fetch": "^2.5.12",
     "node-fetch": "^2.6.1"
   },
   "peerDependencies": {
+    "@apollo/client": "^3.4.0",
     "node-fetch": "^2.6.1"
   },
   "peerDependenciesMeta": {
     "node-fetch": {
+      "optional": true
+    },
+    "@apollo/client": {
       "optional": true
     }
   }

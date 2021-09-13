@@ -1,3 +1,5 @@
+import type { Operation } from '@apollo/client'
+
 import { DataSourceError } from './DataSourceError'
 import type {
   BaseRequestOptions,
@@ -15,9 +17,17 @@ export abstract class RESTDataSource {
   protected fetch!: typeof fetch
   protected Headers!: typeof Headers
   protected Request!: typeof Request
+  protected fetchOptions: Partial<RequestInit> = {}
 
-  constructor() {
+  constructor(operation?: Operation) {
     this.init()
+
+    if (operation) {
+      const operationContext = operation.getContext()
+      if (operationContext.fetchOptions) {
+        this.fetchOptions = operationContext.fetchOptions
+      }
+    }
   }
 
   protected init() {
@@ -133,7 +143,8 @@ export abstract class RESTDataSource {
       }
     }
 
-    const request = new Request(String(url), options as RequestInit)
+    const request = new Request(String(url), { ...options, ...this.fetchOptions } as RequestInit)
+
     const cacheKey = this.cacheKeyFor(request)
     const executeRequest = async () => {
       try {
