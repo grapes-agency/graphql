@@ -2,12 +2,10 @@ import type { FetchResult, NextLink, Operation } from '@apollo/client'
 import { ApolloLink, Observable } from '@apollo/client'
 import { proxy, wrap } from 'comlink'
 
-import { setupRemoteObservable } from './RemoteObservable'
-import { setupRemoteOperation } from './RemoteOperation'
 import type { ApolloWorker } from './createApolloWorker'
+import { registerTransferHandlers } from './transferHandlers'
 
-setupRemoteObservable()
-setupRemoteOperation()
+registerTransferHandlers()
 
 export class ApolloWebWorkerLink<Options = Record<string, any>> extends ApolloLink {
   private apolloWorker: ApolloWorker

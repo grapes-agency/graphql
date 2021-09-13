@@ -3,11 +3,9 @@ import type { FetchResult, NextLink, Operation } from '@apollo/client'
 import { ApolloLink, Observable } from '@apollo/client'
 import { expose } from 'comlink'
 
-import { setupRemoteObservable } from './RemoteObservable'
-import { setupRemoteOperation } from './RemoteOperation'
+import { registerTransferHandlers } from './transferHandlers'
 
-setupRemoteObservable()
-setupRemoteOperation()
+registerTransferHandlers()
 
 type RemoteRequestHandler = (operation: Operation, forward?: NextLink) => Promise<Observable<FetchResult> | null>
 
@@ -32,6 +30,10 @@ const createAsyncLink = () => {
 }
 
 const maybeFixDev = () => {
+  if (typeof global === 'undefined') {
+    return
+  }
+
   const anyGlobal = global as any
 
   if (!('__DEV__' in anyGlobal)) {
