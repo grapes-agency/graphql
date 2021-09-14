@@ -751,7 +751,8 @@ export class GraphQLRuntime {
                 break
               }
 
-              if (fragment.typeCondition.name.value !== type.name.value) {
+              const applicableTypes = [type.name.value, ...(type.interfaces?.map(iface => iface.name.value) || [])]
+              if (!applicableTypes.includes(fragment.typeCondition.name.value)) {
                 break
               }
 

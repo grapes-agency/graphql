@@ -297,4 +297,53 @@ describe('fragments', () => {
       ],
     })
   })
+
+  it('works with fragments on interfaces', async () => {
+    const typeDefs = gql`
+      interface ScreenItem {
+        id: ID!
+      }
+
+      type AppScreenItem implements ScreenItem {
+        id: ID!
+      }
+
+      type Query {
+        screenItems: [ScreenItem!]!
+      }
+    `
+
+    const resolvers: Resolvers = {
+      Query: {
+        screenItems: () => [null],
+      },
+      ScreenItem: {
+        __resolveType: () => 'AppScreenItem',
+      },
+      AppScreenItem: {
+        id: () => 'a',
+      },
+    }
+
+    const query = gql`
+      query Overview {
+        screenItems {
+          ...Item
+        }
+      }
+
+      fragment Item on ScreenItem {
+        __typename
+        id
+      }
+    `
+    const runtime = new GraphQLRuntime({ typeDefs, resolvers })
+    const result = await runtime.execute({ query })
+
+    expect(result.errors).toBeUndefined()
+    expect(result.data!.screenItems[0]).toEqual({
+      __typename: 'AppScreenItem',
+      id: 'a',
+    })
+  })
 })
