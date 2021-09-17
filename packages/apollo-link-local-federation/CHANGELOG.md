@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.19](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.18...@grapes-agency/apollo-link-local-federation@1.2.19) (2021-09-17)
+
+**Note:** Version bump only for package @grapes-agency/apollo-link-local-federation
+
+
+
+
+
 ## [1.2.18](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.17...@grapes-agency/apollo-link-local-federation@1.2.18) (2021-09-14)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-federation
