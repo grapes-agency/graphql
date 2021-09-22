@@ -19,7 +19,7 @@ export const observableTransferHandler: Comlink.TransferHandler<Observable<Execu
       port.start()
       const subscription = observable.subscribe({
         next: next => port.postMessage({ next: { ...next, errors: serializeObject(next.errors)[0] } }),
-        error: (error: any) => port.postMessage({ error }),
+        error: (error: any) => port.postMessage({ error: serializeObject(error) }),
         complete: () => port.postMessage({ complete: true }),
       })
 
@@ -48,7 +48,7 @@ export const observableTransferHandler: Comlink.TransferHandler<Observable<Execu
             errors: deserializeObject(data.next.errors),
           })
         } else if (data.error) {
-          observer.error(data.error)
+          observer.error(deserializeObject(data.error))
         } else if (data.complete) {
           observer.complete()
         }
