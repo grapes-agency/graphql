@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.16](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.3.15...@grapes-agency/apollo-link-local-schema@1.3.16) (2021-09-22)
+
+**Note:** Version bump only for package @grapes-agency/apollo-link-local-schema
+
+
+
+
+
 ## [1.3.15](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-schema@1.3.14...@grapes-agency/apollo-link-local-schema@1.3.15) (2021-09-17)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-local-schema
