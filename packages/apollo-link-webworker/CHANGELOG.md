@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.15](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.14...@grapes-agency/apollo-link-webworker@1.0.0-alpha.15) (2021-09-22)
+
+
+### Features
+
+* **apollo-link-webworker:** Apollo Link transfer ([06cd7d1](https://github.com/grapes-agency/graphql/commit/06cd7d1141b70afb0bdf23e906c1418d4cc6b59b))
+
+
+
+
+
 # [1.0.0-alpha.14](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-webworker@1.0.0-alpha.13...@grapes-agency/apollo-link-webworker@1.0.0-alpha.14) (2021-09-20)
 
 **Note:** Version bump only for package @grapes-agency/apollo-link-webworker
