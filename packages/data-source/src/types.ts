@@ -7,7 +7,7 @@ export type RawRequestOptionsWithParams = RawRequestOptions & { params?: URLSear
 
 export interface BaseRequestOptions extends RawRequestOptions {
   path: string
-  body?: Body
+  body?: Body | null
   params?: URLSearchParamsInit
 }
 
