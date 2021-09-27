@@ -27,14 +27,19 @@ export class ApolloWebWorkerLink<Options = Record<string, any>> extends ApolloLi
 
   public request(operation: Operation, forward?: NextLink) {
     return new Observable<FetchResult>(observer => {
+      let unsubscribed = false
       let unsubscribe = () => {
-        //
+        unsubscribed = true
       }
 
       ;(async () => {
         const observable = await this.apolloWorker.request(operation, forward ? proxy(forward) : undefined)
         if (!observable) {
           observer.complete()
+          return
+        }
+
+        if (unsubscribed) {
           return
         }
 
