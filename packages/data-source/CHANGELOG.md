@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.2](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.3.1...@grapes-agency/data-source@1.3.2) (2021-09-27)
+
+
+### Bug Fixes
+
+* **data-source:** Allow object as body in delete ([ab4fd56](https://github.com/grapes-agency/graphql/commit/ab4fd5623b4a11ae7cdfad6808e035556ed04713))
+
+
+
+
+
 ## [1.3.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/data-source@1.3.0...@grapes-agency/data-source@1.3.1) (2021-09-27)
 
 
