@@ -8,6 +8,7 @@ import type {
   RawRequestOptions,
   RawRequestOptionsWithParams,
   Body,
+  RawRequestOptionsWithBody,
 } from './types'
 
 export abstract class RESTDataSource {
@@ -190,7 +191,7 @@ export abstract class RESTDataSource {
     return this.request<TResult>({ method: 'PUT', path, body, ...init })
   }
 
-  protected delete<TResult = any>(path: string, params?: URLSearchParamsInit, init?: RequestInit) {
+  protected delete<TResult = any>(path: string, params?: URLSearchParamsInit, init?: RawRequestOptionsWithBody) {
     return this.request<TResult>({ method: 'DELETE', path, params, ...init })
   }
 }
