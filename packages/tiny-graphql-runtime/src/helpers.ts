@@ -13,6 +13,7 @@ import type {
   NamedTypeNode,
   NonNullTypeNode,
   ObjectTypeExtensionNode,
+  FieldNode,
   ListTypeNode,
   InputObjectTypeDefinitionNode,
   SelectionSetNode,
@@ -45,15 +46,15 @@ export const isDeepListType = (node: ASTNode): node is ListTypeNode =>
 
 export const isFieldResolver = <T>(resolver: Resolver<T>): resolver is FieldResolver<T> => typeof resolver === 'function'
 
-export const isCustomResolveInfo = (info: ResolveInfo | GraphQLResolveInfo): info is ResolveInfo =>
-  Boolean((info as any).selection)
+export const isCustomResolveInfo = (info: any): info is ResolveInfo => Boolean((info as any).selection)
 
 export const isSelectionSet = (selectionSet: any): selectionSet is SelectionSetNode =>
   'kind' in selectionSet && selectionSet.kind === 'SelectionSet'
 
 export const getSelectedFieldNames = (
   selectionSetOrResolveInfo: SelectionSetNode | GraphQLResolveInfo | ResolveInfo,
-  fragments: Record<string, FragmentDefinitionNode> = {}
+  fragments: Record<string, FragmentDefinitionNode> = {},
+  depth = 0
 ): Array<string> => {
   let selections: ReadonlyArray<SelectionNode> = []
   if (isSelectionSet(selectionSetOrResolveInfo)) {
@@ -72,17 +73,23 @@ export const getSelectedFieldNames = (
   return selections.flatMap(selection => {
     switch (selection.kind) {
       case 'InlineFragment': {
-        return getSelectedFieldNames(selection.selectionSet, fragments)
+        return getSelectedFieldNames(selection.selectionSet, fragments, depth - 1)
       }
       case 'FragmentSpread': {
         const fragment = fragments[selection.name.value]
         if (!fragment) {
           throw new Error(`Unknown fragment ${selection.name.value}`)
         }
-        return getSelectedFieldNames(fragment.selectionSet, fragments)
+        return getSelectedFieldNames(fragment.selectionSet, fragments, depth - 1)
       }
       default: {
-        return selection.name.value
+        const name = selection.name.value
+        if (depth > 0 && selection.selectionSet) {
+          return getSelectedFieldNames(selection.selectionSet, fragments, depth - 1).map(
+            selectedFieldName => `${name}.${selectedFieldName}`
+          )
+        }
+        return name
       }
     }
   })
@@ -92,7 +99,23 @@ export const selectedFieldsAreLimitedTo = (
   infoOrSelectionSet: SelectionSetNode | GraphQLResolveInfo | ResolveInfo,
   fieldNames: Array<string>
 ) => {
+  if (isCustomResolveInfo(infoOrSelectionSet)) {
+    const { resolveContext, selection } = infoOrSelectionSet
+    if (!('selections' in resolveContext)) {
+      resolveContext.selections = new Map<FieldNode, Array<string>>()
+    }
+
+    if (resolveContext.selections.has(selection)) {
+      return resolveContext.selections.get(selection)
+    }
+  }
+
+  const depth = Math.max(...fieldNames.map(fieldName => fieldName.split('.').length)) - 1
   const availableFields = [...fieldNames, '__typename']
-  const selectedFields = getSelectedFieldNames(infoOrSelectionSet)
+  const selectedFields = getSelectedFieldNames(infoOrSelectionSet, {}, depth)
+
+  if (isCustomResolveInfo(infoOrSelectionSet)) {
+    infoOrSelectionSet.resolveContext.selections.set(infoOrSelectionSet.selection, selectedFields)
+  }
   return selectedFields.every(field => availableFields.includes(field))
 }
