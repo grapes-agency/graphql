@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.14...@grapes-agency/tiny-graphql-runtime@1.4.0) (2021-09-28)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** Don't mix up inputValue and field lookup table ([936d20a](https://github.com/grapes-agency/graphql/commit/936d20aa6fe82af8cba2dd61e8af67bb1ce9a631))
+
+
+### Features
+
+* **tiny-graphql-runtime:** Added resolveContext ([9e82334](https://github.com/grapes-agency/graphql/commit/9e82334e7dbc9c1b9f4c8b74d77137eb095d3750))
+* **tiny-graphql-runtime:** allow multi dimensional "selectedFieldsAreLimitedTo" lookup ([ea3a2ed](https://github.com/grapes-agency/graphql/commit/ea3a2ed71f1637bbe813afd6e1283754e840bd9f))
+
+
+
+
+
 ## [1.3.14](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.13...@grapes-agency/tiny-graphql-runtime@1.3.14) (2021-09-22)
 
 
