@@ -468,7 +468,7 @@ export class GraphQLRuntime {
     const errors: Array<GraphQLError> = []
     const promiseRegistry = new PromiseRegistry()
     let spreadIndex = 0
-
+    const resolveContext = {}
     const processSelectionSet = (
       selectionSet: SelectionSetNode,
       type: ObjectTypeDefinitionNode | ObjectTypeExtensionNode,
@@ -503,6 +503,7 @@ export class GraphQLRuntime {
                 parentType: type,
                 fragments,
                 selection,
+                resolveContext,
               }
 
               const resolver =

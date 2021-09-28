@@ -20,6 +20,7 @@ export interface ResolveInfo {
   readonly field: FieldDefinitionNode
   readonly fragments: { [key: string]: FragmentDefinitionNode }
   readonly selection: FieldNode
+  readonly resolveContext: Record<string, any>
 }
 
 export type FieldResolver<Context = any> = (rootValue: any, args: any, context: Context, info: ResolveInfo) => any
