@@ -240,7 +240,8 @@ export class GraphQLRuntime {
     resolvers,
     schemaDirectives,
   }: Required<Pick<GraphQLRuntimeOptions, 'typeDefs' | 'resolvers' | 'schemaDirectives'>>) {
-    let objectNameLookupList: Array<string> | null = null
+    let objectTypeLookupList: Array<string> | null = null
+    let inputTypeLookupList: Array<string> | null = null
     const promiseRegistry = new PromiseRegistry()
     const mapDirectiveDefinitions = (
       target: { directives?: ReadonlyArray<DirectiveNode> },
@@ -273,7 +274,7 @@ export class GraphQLRuntime {
     visit(typeDefs, {
       ObjectTypeDefinition: {
         enter: objectTypeDefinition => {
-          objectNameLookupList = [
+          objectTypeLookupList = [
             objectTypeDefinition.name.value,
             ...(objectTypeDefinition.interfaces?.map(iface => iface.name.value) || []),
           ]
@@ -281,29 +282,29 @@ export class GraphQLRuntime {
       },
       ObjectTypeExtension: {
         enter: objectTypeExtension => {
-          objectNameLookupList = [
+          objectTypeLookupList = [
             objectTypeExtension.name.value,
             ...(objectTypeExtension.interfaces?.map(iface => iface.name.value) || []),
           ]
         },
         leave: () => {
-          objectNameLookupList = null
+          objectTypeLookupList = null
         },
       },
       InputObjectTypeDefinition: {
         enter: inputObjectType => {
-          objectNameLookupList = [inputObjectType.name.value]
+          inputTypeLookupList = [inputObjectType.name.value]
           mapDirectiveDefinitions(inputObjectType, (visitor, args) => {
             visitor.visitInputObjectDefinition?.(inputObjectType as InputObjectTypeDefinitionNodeWithResolver, args)
           })
         },
         leave: () => {
-          objectNameLookupList = null
+          inputTypeLookupList = null
         },
       },
       InputValueDefinition: inputValue => {
-        if (objectNameLookupList) {
-          for (const objectName of objectNameLookupList) {
+        if (inputTypeLookupList) {
+          for (const objectName of inputTypeLookupList) {
             const resolver = asResolvers(resolvers[objectName])[inputValue.name.value]
             if (resolver) {
               ;(inputValue as any).resolve = resolver
@@ -317,8 +318,8 @@ export class GraphQLRuntime {
       },
       FieldDefinition: field => {
         let resolver = this.defaultResolver
-        if (objectNameLookupList) {
-          for (const objectName of objectNameLookupList) {
+        if (objectTypeLookupList) {
+          for (const objectName of objectTypeLookupList) {
             const fieldResolver = asResolvers(resolvers[objectName])[field.name.value]
             if (fieldResolver) {
               resolver = fieldResolver
