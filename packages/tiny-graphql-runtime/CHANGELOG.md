@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.4.0...@grapes-agency/tiny-graphql-runtime@1.4.1) (2021-09-29)
+
+
+### Bug Fixes
+
+* **tiny-graphql-runtime:** Early return null for Nullable fields ([5b5df75](https://github.com/grapes-agency/graphql/commit/5b5df752fc5c1dd461dd41825d7038aecf27bb7a))
+
+
+
+
+
 # [1.4.0](https://github.com/grapes-agency/graphql/compare/@grapes-agency/tiny-graphql-runtime@1.3.14...@grapes-agency/tiny-graphql-runtime@1.4.0) (2021-09-28)
 
 
