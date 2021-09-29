@@ -625,8 +625,13 @@ export class GraphQLRuntime {
                   .then(result => {
                     result = result === undefined ? null : result
 
-                    if (field.type.kind === 'NonNullType' && result === null) {
-                      throw new GraphQLError(`Cannot return null for non-nullable field ${type.name.value}.${field.name.value}`)
+                    if (result === null) {
+                      if (isNonNullType(field.type)) {
+                        throw new GraphQLError(`Cannot return null for non-nullable field ${type.name.value}.${field.name.value}`)
+                      }
+
+                      data[fieldName] = null
+                      return
                     }
 
                     const isListSelection = isDeepListType(field.type)
