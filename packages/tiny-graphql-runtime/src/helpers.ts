@@ -99,7 +99,6 @@ export const selectedFieldsAreLimitedTo = (
   infoOrSelectionSet: SelectionSetNode | GraphQLResolveInfo | ResolveInfo,
   fieldNames: Array<string>
 ) => {
-  const availableFields = [...fieldNames, '__typename']
   let selectedFields: Array<string> | null = null
 
   if (isCustomResolveInfo(infoOrSelectionSet)) {
@@ -121,5 +120,5 @@ export const selectedFieldsAreLimitedTo = (
       infoOrSelectionSet.resolveContext.selections.set(infoOrSelectionSet.selection, selectedFields)
     }
   }
-  return selectedFields.every(field => availableFields.includes(field))
+  return selectedFields.every(field => field === '__typename' || field.endsWith('.__typename') || fieldNames.includes(field))
 }
