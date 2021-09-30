@@ -1,6 +1,6 @@
 {
   "name": "@grapes-agency/apollo-link-local-federation",
-  "version": "1.2.23",
+  "version": "1.2.24",
   "description": "Like @apollo/federation... but local",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.js",
