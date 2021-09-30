@@ -99,6 +99,9 @@ export const selectedFieldsAreLimitedTo = (
   infoOrSelectionSet: SelectionSetNode | GraphQLResolveInfo | ResolveInfo,
   fieldNames: Array<string>
 ) => {
+  const availableFields = [...fieldNames, '__typename']
+  let selectedFields: Array<string> | null = null
+
   if (isCustomResolveInfo(infoOrSelectionSet)) {
     const { resolveContext, selection } = infoOrSelectionSet
     if (!('selections' in resolveContext)) {
@@ -106,16 +109,17 @@ export const selectedFieldsAreLimitedTo = (
     }
 
     if (resolveContext.selections.has(selection)) {
-      return resolveContext.selections.get(selection)
+      selectedFields = resolveContext.selections.get(selection)
     }
   }
 
-  const depth = Math.max(...fieldNames.map(fieldName => fieldName.split('.').length)) - 1
-  const availableFields = [...fieldNames, '__typename']
-  const selectedFields = getSelectedFieldNames(infoOrSelectionSet, {}, depth)
+  if (!selectedFields) {
+    const depth = Math.max(...fieldNames.map(fieldName => fieldName.split('.').length)) - 1
+    selectedFields = getSelectedFieldNames(infoOrSelectionSet, {}, depth)
 
-  if (isCustomResolveInfo(infoOrSelectionSet)) {
-    infoOrSelectionSet.resolveContext.selections.set(infoOrSelectionSet.selection, selectedFields)
+    if (isCustomResolveInfo(infoOrSelectionSet)) {
+      infoOrSelectionSet.resolveContext.selections.set(infoOrSelectionSet.selection, selectedFields)
+    }
   }
   return selectedFields.every(field => availableFields.includes(field))
 }
