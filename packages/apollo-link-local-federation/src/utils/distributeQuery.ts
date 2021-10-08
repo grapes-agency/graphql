@@ -15,6 +15,8 @@ import type {
   StringValueNode,
   InterfaceTypeDefinitionNode,
   FieldDefinitionNode,
+  Visitor,
+  ASTKindToNode,
 } from 'graphql'
 import { visit, specifiedScalarTypes, GraphQLError } from 'graphql'
 
@@ -86,7 +88,7 @@ interface ServiceHint {
   externalType: boolean
   parentFieldDefinition: FieldDefinitionNode
   keys: Array<string>
-  path: Array<string>
+  paths: Array<Array<string>>
 }
 
 interface ExtendedFieldNode extends FieldNode {
@@ -106,10 +108,11 @@ export const distributeQuery = (
     fieldDefinition?: FieldDefinitionNode
   }> = []
   const injectFields: Array<Set<string>> = []
-  const fragmentHints = new Map<string, typeof fieldPath>()
+  const fragmentHints = new Map<string, Set<typeof fieldPath>>()
   const fragments = new Map<string, FragmentDefinitionNode>()
   const errors: Array<GraphQLError> = []
-  const firstPass: DocumentNode = visit(query, {
+  let inFragmentDefinition = false
+  const firstPassVisitor: Visitor<ASTKindToNode> = {
     OperationDefinition: {
       enter: operationDefinition => {
         const typeName = operationDefinition.operation[0].toUpperCase() + operationDefinition.operation.substr(1)
@@ -148,7 +151,10 @@ export const distributeQuery = (
       },
     },
     FragmentSpread: fragmentSpread => {
-      fragmentHints.set(fragmentSpread.name.value, [...fieldPath])
+      if (!fragmentHints.has(fragmentSpread.name.value)) {
+        fragmentHints.set(fragmentSpread.name.value, new Set())
+      }
+      fragmentHints.get(fragmentSpread.name.value)!.add([...fieldPath])
     },
     InlineFragment: {
       enter: inlinefragment => {
@@ -168,21 +174,30 @@ export const distributeQuery = (
         if (!fragmentHints.has(name)) {
           return null
         }
-        const hint = fragmentHints.get(name)!
-        const parent = hint[hint.length - 1]
-        const parentType = parent.service.getType(fragmentDefinition.typeCondition.name.value)
-        hint[hint.length - 1].type = parentType!
-        fieldPath.push(...hint)
+        const hints = fragmentHints.get(name)!
+
+        for (const hint of hints) {
+          const parent = hint[hint.length - 1]
+          const parentType = parent.service.getType(fragmentDefinition.typeCondition.name.value)
+          hint[hint.length - 1].type = parentType!
+          fieldPath.push(...hint)
+          visit(fragmentDefinition.selectionSet, firstPassVisitor)
+        }
+        inFragmentDefinition = true
       },
       leave: fragmentDefinition => {
         const name = fragmentDefinition.name.value
         fragments.set(name, fragmentDefinition)
-        const hint = fragmentHints.get(name)!
-        hint.forEach(() => fieldPath.pop())
+        const hints = fragmentHints.get(name)!
+        hints.forEach(hint => hint.forEach(() => fieldPath.pop()))
+        inFragmentDefinition = false
       },
     },
     Field: {
       enter: (field: ExtendedFieldNode) => {
+        if (inFragmentDefinition) {
+          return field
+        }
         const fieldName = field.name.value
         const aliasName = field.alias?.value || fieldName
 
@@ -223,14 +238,18 @@ export const distributeQuery = (
             return null
           }
 
-          field.serviceHint = {
-            service: external.service,
-            path: fieldPath.map(f => f.name),
-            keys: entityKeys,
-            typeName,
-            fieldName,
-            externalType: isObjectTypeExtension(parent.type),
-            parentFieldDefinition: parent.fieldDefinition!,
+          if (field.serviceHint) {
+            field.serviceHint.paths.push(fieldPath.map(f => f.name))
+          } else {
+            field.serviceHint = {
+              service: external.service,
+              paths: [fieldPath.map(f => f.name)],
+              keys: entityKeys,
+              typeName,
+              fieldName,
+              externalType: isObjectTypeExtension(parent.type),
+              parentFieldDefinition: parent.fieldDefinition!,
+            }
           }
 
           fieldPath.push({ name: aliasName, ...external })
@@ -258,12 +277,16 @@ export const distributeQuery = (
         return null
       },
       leave: field => {
+        if (inFragmentDefinition) {
+          return field
+        }
         if (field.name.value !== '__typename') {
           fieldPath.pop()
         }
       },
     },
-  })
+  }
+  const firstPass: DocumentNode = visit(query, firstPassVisitor)
 
   if (firstPass.definitions.length === 0) {
     return [null, errors]
@@ -291,17 +314,20 @@ export const distributeQuery = (
         const {
           service: externalService,
           typeName,
-          path: mergePath,
+          paths: mergePaths,
           keys,
           externalType,
           parentFieldDefinition,
         } = field.serviceHint
-        const joinedPath = mergePath.slice(1).join('.')
-        if (!externals.has(joinedPath)) {
-          externals.set(joinedPath, new Map())
+
+        for (const mergePath of mergePaths) {
+          const joinedPath = mergePath.slice(1).join('.')
+          if (!externals.has(joinedPath)) {
+            externals.set(joinedPath, new Map())
+          }
         }
 
-        const externalServiceMap = externals.get(joinedPath)!
+        const externalServiceMap = externals.get(mergePaths[0].slice(1).join('.'))!
         if (!externalServiceMap.has(externalService)) {
           externalServiceMap.set(externalService, new Map())
         }
