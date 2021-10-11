@@ -7,7 +7,6 @@ import {
 import type {
   DocumentNode,
   DefinitionNode,
-  FragmentDefinitionNode,
   OperationDefinitionNode,
   ObjectTypeExtensionNode,
   ObjectTypeDefinitionNode,
@@ -15,14 +14,11 @@ import type {
   StringValueNode,
   InterfaceTypeDefinitionNode,
   FieldDefinitionNode,
-  Visitor,
-  ASTKindToNode,
 } from 'graphql'
 import { visit, specifiedScalarTypes, GraphQLError } from 'graphql'
 
 import { ExternalQuery } from './ExternalQuery'
 import type { LocalFederationService } from './LocalFederationService'
-import { UsedFragmentsSet } from './UsedFragmentsSet'
 import { mergeSelectionSets } from './mergeSelectionSets'
 import { parseDocument } from './parseDocument'
 
@@ -82,7 +78,7 @@ const findService = (
 }
 
 interface ServiceHint {
-  service: LocalFederationService
+  external: { service: LocalFederationService; type: ObjectTypeExtensionNode | ObjectTypeDefinitionNode | string }
   typeName: string
   fieldName: string
   externalType: boolean
@@ -108,11 +104,9 @@ export const distributeQuery = (
     fieldDefinition?: FieldDefinitionNode
   }> = []
   const injectFields: Array<Set<string>> = []
-  const fragmentHints = new Map<string, Set<typeof fieldPath>>()
-  const fragments = new Map<string, FragmentDefinitionNode>()
   const errors: Array<GraphQLError> = []
-  let inFragmentDefinition = false
-  const firstPassVisitor: Visitor<ASTKindToNode> = {
+  const inFragmentDefinition = false
+  const firstPass: DocumentNode = visit(query, {
     OperationDefinition: {
       enter: operationDefinition => {
         const typeName = operationDefinition.operation[0].toUpperCase() + operationDefinition.operation.substr(1)
@@ -150,12 +144,6 @@ export const distributeQuery = (
         return mergeSelectionSets(baseSelectionSet, selectionSet)
       },
     },
-    FragmentSpread: fragmentSpread => {
-      if (!fragmentHints.has(fragmentSpread.name.value)) {
-        fragmentHints.set(fragmentSpread.name.value, new Set())
-      }
-      fragmentHints.get(fragmentSpread.name.value)!.add([...fieldPath])
-    },
     InlineFragment: {
       enter: inlinefragment => {
         const parent = fieldPath[fieldPath.length - 1]
@@ -168,36 +156,8 @@ export const distributeQuery = (
         parent.originalType = undefined
       },
     },
-    FragmentDefinition: {
-      enter: fragmentDefinition => {
-        const name = fragmentDefinition.name.value
-        if (!fragmentHints.has(name)) {
-          return null
-        }
-        const hints = fragmentHints.get(name)!
-
-        for (const hint of hints) {
-          const parent = hint[hint.length - 1]
-          const parentType = parent.service.getType(fragmentDefinition.typeCondition.name.value)
-          hint[hint.length - 1].type = parentType!
-          fieldPath.push(...hint)
-          visit(fragmentDefinition.selectionSet, firstPassVisitor)
-        }
-        inFragmentDefinition = true
-      },
-      leave: fragmentDefinition => {
-        const name = fragmentDefinition.name.value
-        fragments.set(name, fragmentDefinition)
-        const hints = fragmentHints.get(name)!
-        hints.forEach(hint => hint.forEach(() => fieldPath.pop()))
-        inFragmentDefinition = false
-      },
-    },
     Field: {
       enter: (field: ExtendedFieldNode) => {
-        if (inFragmentDefinition) {
-          return field
-        }
         const fieldName = field.name.value
         const aliasName = field.alias?.value || fieldName
 
@@ -231,18 +191,20 @@ export const distributeQuery = (
             return null
           }
 
-          const external = findService(typeName, fieldName, services)
-
-          if (!external) {
-            errors.push(new GraphQLError(`unable to resolve field "${fieldName}" of type "${typeName}"`))
-            return null
-          }
-
+          let external: ReturnType<typeof findService>
           if (field.serviceHint) {
             field.serviceHint.paths.push(fieldPath.map(f => f.name))
+            external = field.serviceHint.external
           } else {
+            external = findService(typeName, fieldName, services)
+
+            if (!external) {
+              errors.push(new GraphQLError(`unable to resolve field "${fieldName}" of type "${typeName}"`))
+              return null
+            }
+
             field.serviceHint = {
-              service: external.service,
+              external,
               paths: [fieldPath.map(f => f.name)],
               keys: entityKeys,
               typeName,
@@ -285,8 +247,7 @@ export const distributeQuery = (
         }
       },
     },
-  }
-  const firstPass: DocumentNode = visit(query, firstPassVisitor)
+  })
 
   if (firstPass.definitions.length === 0) {
     return [null, errors]
@@ -312,63 +273,48 @@ export const distributeQuery = (
         }
 
         const {
-          service: externalService,
-          typeName,
-          paths: mergePaths,
-          keys,
-          externalType,
-          parentFieldDefinition,
-        } = field.serviceHint
+          serviceHint: {
+            external: { service: externalService },
+            typeName,
+            paths: mergePaths,
+            keys,
+            externalType,
+            parentFieldDefinition,
+          },
+          ...restField
+        } = field
 
         for (const mergePath of mergePaths) {
           const joinedPath = mergePath.slice(1).join('.')
           if (!externals.has(joinedPath)) {
             externals.set(joinedPath, new Map())
           }
-        }
 
-        const externalServiceMap = externals.get(mergePaths[0].slice(1).join('.'))!
-        if (!externalServiceMap.has(externalService)) {
-          externalServiceMap.set(externalService, new Map())
-        }
+          const externalServiceMap = externals.get(mergePath.slice(1).join('.'))!
+          if (!externalServiceMap.has(externalService)) {
+            externalServiceMap.set(externalService, new Map())
+          }
 
-        const externalTypeMap = externalServiceMap.get(externalService)!
-        if (!externalTypeMap.has(typeName)) {
-          externalTypeMap.set(typeName, new ExternalQuery(typeName, externalType, parentFieldDefinition))
+          const externalTypeMap = externalServiceMap.get(externalService)!
+          if (!externalTypeMap.has(typeName)) {
+            externalTypeMap.set(typeName, new ExternalQuery(typeName, externalType, parentFieldDefinition))
+          }
+          const externalQuery = externalTypeMap.get(typeName)!
+          externalQuery.addField(restField)
+          externalQuery.addKeys(keys)
         }
-
-        delete field.serviceHint
-        const externalQuery = externalTypeMap.get(typeName)!
-        externalQuery.addField(field)
-        externalQuery.addKeys(keys)
 
         return null
       },
     })
 
-    const usedFragments = new UsedFragmentsSet(preProcessedDocument)
+    const definitions = [...preProcessedDocument.definitions]
 
-    const processedDocument: DocumentNode = visit(preProcessedDocument, {
-      FragmentDefinition(fragmentDefinition) {
-        const name = fragmentDefinition.name.value
-        if (usedFragments.has(name)) {
-          usedFragments.delete(name)
-          return
-        }
-        return null
-      },
-    })
-
-    const definitions = [
-      ...processedDocument.definitions,
-      ...Array.from(usedFragments, missingFragment => fragments.get(missingFragment)!),
-    ]
-
-    Object.assign(processedDocument, { definitions })
+    Object.assign(preProcessedDocument, { definitions })
 
     documents.set(path, {
       service: currentService,
-      document: processedDocument,
+      document: preProcessedDocument,
       extension,
       typename,
       keyDocument,

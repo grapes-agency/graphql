@@ -6,14 +6,18 @@ interface PathObj {
 export const getWithPath = (data: Array<Record<string, any>> | Record<string, any> | null, path: string) => {
   if (Array.isArray(data)) {
     const operationData: Array<PathObj> = []
-    data.forEach((subData, index) =>
-      operationData.push(
-        ...getWithPath(subData, path).map(d => ({
-          path: `[${index}].${d.path}`,
-          data: d.data,
-        }))
-      )
-    )
+    data.forEach((subData, index) => {
+      try {
+        operationData.push(
+          ...getWithPath(subData, path).map(d => ({
+            path: `[${index}].${d.path}`,
+            data: d.data,
+          }))
+        )
+      } catch {
+        //
+      }
+    })
     return operationData
   }
 
@@ -36,14 +40,18 @@ export const getWithPath = (data: Array<Record<string, any>> | Record<string, an
 
     if (Array.isArray(currentData) && currentPath.length < segments.length) {
       const pathLeft = segments.slice(currentPath.length).join('.')
-      currentData.forEach((currentSubData, index) =>
-        operationData.push(
-          ...getWithPath(currentSubData, pathLeft).map(d => ({
-            path: `${currentPath.join('.')}[${index}].${d.path}`,
-            data: d.data,
-          }))
-        )
-      )
+      currentData.forEach((currentSubData, index) => {
+        try {
+          operationData.push(
+            ...getWithPath(currentSubData, pathLeft).map(d => ({
+              path: `${currentPath.join('.')}[${index}].${d.path}`,
+              data: d.data,
+            }))
+          )
+        } catch {
+          //
+        }
+      })
       break
     }
   }

@@ -13,6 +13,7 @@ import type { DocumentInfo } from './distributeQuery'
 import { distributeQuery } from './distributeQuery'
 import { getWithPath } from './getWithPath'
 import { isSubscription as isSubscriptionType } from './isSubscription'
+import { normalizeQuery } from './normalizeQuery'
 import { observablePromise } from './observablePromise'
 import { sanitizeResults } from './sanitizeResult'
 
@@ -31,8 +32,9 @@ export class ResolutionStrategy {
   public deltaQuery!: DocumentNode | null
 
   constructor(private query: DocumentNode, services: Array<LocalFederationService>) {
+    const normalizedQuery = normalizeQuery(query)
     for (const service of services) {
-      const [documents, errors] = distributeQuery(query, service, services)
+      const [documents, errors] = distributeQuery(normalizedQuery, service, services)
       this.distributionErrors.push(...errors)
       if (!documents) {
         continue
@@ -50,7 +52,7 @@ export class ResolutionStrategy {
       })
     }
 
-    this.calculateDeltaQuery(query)
+    this.calculateDeltaQuery(normalizedQuery)
   }
 
   private calculateDeltaQuery(query: DocumentNode) {
