@@ -98,7 +98,7 @@ export const distributeQuery = (
 ): [null | Map<string, DocumentInfo>, Array<GraphQLError>] => {
   const fieldPath: Array<{
     type: DefinitionNode | string
-    originalType?: DefinitionNode | string
+    originalTypes?: Array<DefinitionNode | string>
     name: string
     service: LocalFederationService
     fieldDefinition?: FieldDefinitionNode
@@ -147,13 +147,12 @@ export const distributeQuery = (
     InlineFragment: {
       enter: inlinefragment => {
         const parent = fieldPath[fieldPath.length - 1]
-        parent.originalType = parent.type
+        parent.originalTypes = Array.isArray(parent.originalTypes) ? [...parent.originalTypes, parent.type] : [parent.type]
         parent.type = parent.service.getType(inlinefragment.typeCondition?.name.value ?? '')!
       },
       leave: () => {
         const parent = fieldPath[fieldPath.length - 1]
-        parent.type = parent.originalType!
-        parent.originalType = undefined
+        parent.type = parent.originalTypes!.pop()!
       },
     },
     Field: {
