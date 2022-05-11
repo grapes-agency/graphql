@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.28](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.27...@grapes-agency/apollo-link-local-federation@1.2.28) (2022-05-11)
+
+
+### Bug Fixes
+
+* **@grapes-agency/apollo-link-local-federation:** Allow fragment nesting of same type ([c0dff7e](https://github.com/grapes-agency/graphql/commit/c0dff7e2e5d0c7dbf3938855154ef81563fe2a87))
+
+
+
+
+
 ## [1.2.27](https://github.com/grapes-agency/graphql/compare/@grapes-agency/apollo-link-local-federation@1.2.26...@grapes-agency/apollo-link-local-federation@1.2.27) (2021-10-11)
 
 
